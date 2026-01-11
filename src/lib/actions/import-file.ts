@@ -1,11 +1,8 @@
 import { toast } from 'sonner'
+import { importFilesAsNewTabs, isImageFile } from '@/lib/file-importer'
 
 const ACCEPT_TYPES = 'text/html,text/markdown,.md,image/*'
 
-/**
- * 触发文件选择对话框
- * 使用 window.focus 事件兜底处理用户取消选择的情况
- */
 export function triggerImportDialog(): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
@@ -21,7 +18,6 @@ export function triggerImportDialog(): Promise<File[]> {
     }
 
     function handleWindowFocus() {
-      // 延迟检查，给 change 事件一点时间触发
       setTimeout(() => {
         if (!resolved) {
           resolved = true
@@ -50,13 +46,24 @@ export async function handleImportFiles() {
   if (!files.length)
     return
 
-  const { getImportEditorView, importFiles } = await import(
-    '@/components/markdown/editor/file-import',
-  )
-  const view = getImportEditorView()
-  if (!view) {
-    toast.error('编辑器尚未就绪')
+  const textFiles = files.filter(f => !isImageFile(f))
+  const imageFiles = files.filter(isImageFile)
+
+  if (textFiles.length > 0) {
+    await importFilesAsNewTabs(textFiles)
     return
   }
-  await importFiles(view, files, { replaceAll: true })
+
+  if (imageFiles.length > 0) {
+    const { getImportEditorView, importFilesToEditor } = await import(
+      '@/components/markdown/editor/file-import',
+    )
+    const view = getImportEditorView()
+    if (view) {
+      await importFilesToEditor(view, imageFiles, { insertPos: view.state.selection.main.anchor })
+    }
+    else {
+      toast.error('编辑器尚未就绪')
+    }
+  }
 }

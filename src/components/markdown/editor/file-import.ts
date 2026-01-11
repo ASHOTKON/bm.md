@@ -1,5 +1,6 @@
 import { EditorView, ViewPlugin } from '@codemirror/view'
 import { toast } from 'sonner'
+import { importFilesAsNewTabs, isImageFile, isTextFile } from '@/lib/file-importer'
 import { uploadImage } from '@/services/upload'
 
 let currentEditorView: EditorView | null = null
@@ -25,8 +26,7 @@ function getFilesFromDataTransfer(dataTransfer: DataTransfer | null): File[] {
 }
 
 function looksLikeMarkdown(text: string): boolean {
-  // 检测常见 Markdown 语法特征：标题、加粗、代码块、列表、链接
-  return /^#{1,6}\s|\*\*|--|__|```|^\s*[-*+]\s|\[.+\]\(.+\)/m.test(text)
+  return /^#{1,6}\s|\*\*|__|```|^\s*[-*+]\s|\[.+\]\(.+\)/m.test(text)
 }
 
 export const importViewTrackerExtension = ViewPlugin.fromClass(
@@ -46,7 +46,7 @@ export const importViewTrackerExtension = ViewPlugin.fromClass(
   },
 )
 
-export async function importFiles(
+export async function importFilesToEditor(
   view: EditorView,
   files: File[],
   options: { insertPos?: number, replaceAll?: boolean } = {},
@@ -134,14 +134,25 @@ export const importDropPasteExtension = EditorView.domEventHandlers({
     }
 
     event.preventDefault()
-    void importFiles(view, files, { replaceAll: true })
+
+    const textFiles = files.filter(isTextFile)
+    const imageFiles = files.filter(isImageFile)
+
+    if (textFiles.length > 0) {
+      void importFilesAsNewTabs(textFiles)
+      return
+    }
+
+    if (imageFiles.length > 0) {
+      void importFilesToEditor(view, imageFiles, { insertPos: view.state.selection.main.anchor })
+    }
   },
   paste(event, view) {
     const files = getFilesFromDataTransfer(event.clipboardData)
     if (files.length) {
       event.preventDefault()
       const insertPos = view.state.selection.main.anchor
-      void importFiles(view, files, { insertPos })
+      void importFilesToEditor(view, files, { insertPos })
       return
     }
 

@@ -1,5 +1,6 @@
-import { useFileReplaceStore } from '@/stores/file-replace'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
+
+const LAUNCH_HANDLED_KEY = 'bm.md.launch-handled'
 
 export function initFileHandler() {
   if (!('launchQueue' in window))
@@ -9,6 +10,20 @@ export function initFileHandler() {
     if (!launchParams.files?.length)
       return
 
+    // 使用 sessionStorage 防止刷新后重复处理
+    const handledKey = launchParams.files
+      .map(f => f.name)
+      .sort()
+      .join('|')
+    const lastHandled = sessionStorage.getItem(LAUNCH_HANDLED_KEY)
+    if (lastHandled === handledKey) {
+      return
+    }
+    sessionStorage.setItem(LAUNCH_HANDLED_KEY, handledKey)
+
+    const { createFile, switchFile } = useFilesStore.getState()
+    let lastCreatedId: string | null = null
+
     for (const fileHandle of launchParams.files) {
       try {
         const file = await fileHandle.getFile()
@@ -16,19 +31,16 @@ export function initFileHandler() {
           continue
 
         const content = await file.text()
-        const currentContent = useMarkdownStore.getState().content.trim()
-
-        if (currentContent === '') {
-          useMarkdownStore.getState().setContent(content)
-        }
-        else {
-          useFileReplaceStore.getState().open(file.name, content)
-        }
-        break
+        const id = await createFile(file.name, content)
+        lastCreatedId = id
       }
       catch (err) {
         console.error('[bm.md] 无法读取文件:', err)
       }
+    }
+
+    if (lastCreatedId) {
+      await switchFile(lastCreatedId)
     }
   })
 }

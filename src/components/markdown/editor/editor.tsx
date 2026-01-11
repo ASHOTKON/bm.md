@@ -1,20 +1,18 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
-import { EditorView, keymap } from '@codemirror/view'
+import { EditorView } from '@codemirror/view'
 import CodeMirror from '@uiw/react-codemirror'
 import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { useEditorScrollSync } from '@/components/markdown/hooks/use-scroll-sync'
-import { exportMarkdown } from '@/lib/actions'
-import { trackEvent } from '@/lib/analytics'
 import { useEditorStore } from '@/stores/editor'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 import { getAyuCodeMirrorTheme } from '@/themes/codemirror'
 import { importDropPasteExtension, importViewTrackerExtension } from './file-import'
 
 export default function CodeMirrorEditor() {
-  const content = useMarkdownStore(state => state.content)
-  const setContent = useMarkdownStore(state => state.setContent)
+  const content = useFilesStore(state => state.currentContent)
+  const setContent = useFilesStore(state => state.setCurrentContent)
   const enableScrollSync = useEditorStore(state => state.enableScrollSync)
   const { theme } = useTheme()
 
@@ -37,16 +35,6 @@ export default function CodeMirrorEditor() {
       ...editorExtensions,
       importViewTrackerExtension,
       importDropPasteExtension,
-      keymap.of([
-        {
-          key: 'Mod-s',
-          run: () => {
-            trackEvent('export', 'markdown', 'hotkey')
-            exportMarkdown(useMarkdownStore.getState().content)
-            return true
-          },
-        },
-      ]),
     ],
     [editorExtensions],
   )

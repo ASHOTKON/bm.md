@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Code,
+  FilePlus,
   Palette,
   RotateCcw,
 } from 'lucide-react'
@@ -45,7 +46,7 @@ import {
 import { trackEvent } from '@/lib/analytics'
 import { useCommandPaletteStore } from '@/stores/command-palette'
 import { useEditorStore } from '@/stores/editor'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 import {
   PREVIEW_WIDTH_DESKTOP,
   PREVIEW_WIDTH_MOBILE,
@@ -75,7 +76,10 @@ export function CommandPalette() {
   const { open, setOpen, subMenu, setSubMenu, resetSubMenu } = useCommandPaletteStore()
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
 
-  const { content, setContent } = useMarkdownStore()
+  const content = useFilesStore(state => state.currentContent)
+  const setContent = useFilesStore(state => state.setCurrentContent)
+  const createFile = useFilesStore(state => state.createFile)
+  const switchFile = useFilesStore(state => state.switchFile)
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
@@ -104,6 +108,13 @@ export function CommandPalette() {
   const closePanel = useCallback(() => {
     setOpen(false)
   }, [setOpen])
+
+  const handleNewFile = useCallback(async () => {
+    closePanel()
+    trackEvent('editor', 'new-file', 'menu')
+    const id = await createFile()
+    await switchFile(id)
+  }, [closePanel, createFile, switchFile])
 
   const handleImport = useCallback(() => {
     closePanel()
@@ -216,6 +227,10 @@ export function CommandPalette() {
     return (
       <>
         <CommandGroup heading="编辑器">
+          <CommandItem onSelect={handleNewFile}>
+            <FilePlus className="size-4" />
+            新建文件
+          </CommandItem>
           <CommandItem onSelect={handleImport}>
             {ImportIcon && <ImportIcon className="size-4" />}
             {editorCommandConfig.import.label}

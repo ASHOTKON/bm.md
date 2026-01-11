@@ -25,6 +25,9 @@ pnpm test src/lib/markdown/extract/text.test.ts       # 运行单个测试文件
 pnpm test --grep "keeps paragraph"                    # 按测试名称过滤
 pnpm test --watch                                     # 监听模式
 
+# 安装依赖
+pnpm add -D <package>                                 # 所有依赖添加为开发依赖
+
 # shadcn/ui 组件
 pnpm shadcn add <component>                           # 添加 shadcn/ui 组件
 pnpm shadcn add button --registry @magicui            # 使用自定义 registry

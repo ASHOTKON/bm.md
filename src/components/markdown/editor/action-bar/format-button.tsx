@@ -4,10 +4,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { editorCommandConfig } from '@/config'
 import { formatMarkdown } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 
 export function FormatButton() {
-  const { content, setContent } = useMarkdownStore()
+  const content = useFilesStore(state => state.currentContent)
+  const setContent = useFilesStore(state => state.setCurrentContent)
 
   const onFormatClick = () => {
     trackEvent('editor', 'format', 'button')

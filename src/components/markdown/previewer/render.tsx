@@ -5,14 +5,14 @@ import { usePreviewScrollSync } from '@/components/markdown/hooks/use-scroll-syn
 import { Phone } from '@/components/mockups/iphone'
 import { Safari } from '@/components/mockups/safari'
 import { useEditorStore } from '@/stores/editor'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 import { PREVIEW_WIDTH_MOBILE, usePreviewStore } from '@/stores/preview'
 import iframeShell from './iframe-shell.html?raw'
 
 const RENDER_DEBOUNCE_MS = 100
 
 export default function MarkdownRender() {
-  const content = useMarkdownStore(state => state.content)
+  const content = useFilesStore(state => state.currentContent)
   const enableScrollSync = useEditorStore(state => state.enableScrollSync)
   const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
   const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)

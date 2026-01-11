@@ -4,10 +4,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { editorCommandConfig } from '@/config'
 import { exportMarkdown } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 
 export function ExportButton() {
-  const { content } = useMarkdownStore()
+  const content = useFilesStore(state => state.currentContent)
 
   const onExportClick = () => {
     trackEvent('export', 'markdown', 'button')

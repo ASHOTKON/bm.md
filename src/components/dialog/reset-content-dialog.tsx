@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { trackEvent } from '@/lib/analytics'
-import { useMarkdownStore } from '@/stores/markdown'
+import { defaultMarkdown, useFilesStore } from '@/stores/files'
 
 interface ResetContentDialogProps {
   open: boolean
@@ -19,11 +19,11 @@ interface ResetContentDialogProps {
 }
 
 export function ResetContentDialog({ open, onOpenChange }: ResetContentDialogProps) {
-  const resetContent = useMarkdownStore(state => state.resetContent)
+  const setCurrentContent = useFilesStore(state => state.setCurrentContent)
 
   const handleConfirm = () => {
     trackEvent('editor', 'reset', 'menu')
-    resetContent()
+    setCurrentContent(defaultMarkdown)
     onOpenChange(false)
   }
 

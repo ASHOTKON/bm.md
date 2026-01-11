@@ -1,7 +1,7 @@
 import type { Platform } from '@/lib/markdown/render/adapters'
 import { useCallback, useState } from 'react'
 import { useEditorStore } from '@/stores/editor'
-import { useMarkdownStore } from '@/stores/markdown'
+import { useFilesStore } from '@/stores/files'
 import { usePreviewStore } from '@/stores/preview'
 
 export interface PlatformCopyResult {
@@ -14,7 +14,7 @@ export function usePlatformCopy(platform: Platform): PlatformCopyResult {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  const content = useMarkdownStore(state => state.content)
+  const content = useFilesStore(state => state.currentContent)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
   const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)

@@ -118,7 +118,7 @@ export function CustomCssDialog() {
               value={localCss}
               onChange={e => setLocalCss(e.target.value)}
               placeholder="输入自定义 CSS 样式..."
-              className="min-h-40 max-h-60 font-mono text-xs"
+              className="max-h-60 min-h-40 font-mono text-xs"
             />
             <div className="flex items-center justify-between">
               <FieldDescription>
