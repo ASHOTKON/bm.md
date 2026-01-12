@@ -447,13 +447,9 @@
   overflow: hidden;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #fff9c4;
-}
-
-#bm-md tfoot {
-  background-color: #f8f6f2;
-  font-size: 0.875em;
 }
 
 #bm-md th,
@@ -516,6 +512,7 @@
   border: none;
   height: 3px;
   /* 虚线模拟手绘分割线 */
+  background-color: #2d2d2d;
   background: repeating-linear-gradient(90deg, #2d2d2d 0px, #2d2d2d 10px, transparent 10px, transparent 16px);
 }
 

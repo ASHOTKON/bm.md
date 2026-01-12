@@ -355,13 +355,9 @@
   border: 1px solid #e6e8eb;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #f8f9fa;
-}
-
-#bm-md tfoot {
-  background-color: #f8f9fa;
-  font-size: 0.875em;
 }
 
 #bm-md th,
@@ -423,6 +419,7 @@
    ============================================ */
 
 #bm-md img {
+  display: block;
   max-width: 100%;
   height: auto;
   border-radius: 8px;
@@ -627,6 +624,7 @@
 
 #bm-md iframe,
 #bm-md video {
+  display: block;
   max-width: 100%;
   margin: 1em 0;
   border-radius: 8px;

@@ -439,15 +439,10 @@
   box-shadow: 6px 6px 0 #1e293b;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #8b5cf6;
   color: #ffffff;
-}
-
-#bm-md tfoot {
-  background-color: #f1f5f9;
-  font-size: 0.875em;
-  border-top: 3px solid #1e293b;
 }
 
 #bm-md th,
@@ -572,12 +567,13 @@
    ============================================ */
 
 #bm-md .footnotes {
-  margin-top: 1.75em;
+  margin-top: 2em;
   padding-top: 1.1em;
   border-top: 5px solid #8b5cf6;
   font-size: 0.875em;
   color: #64748b;
   /* 彩虹条纹顶部装饰 */
+  background-color: #8b5cf6;
   background: linear-gradient(90deg, #8b5cf6 0, #8b5cf6 48px, #f472b6 48px, #f472b6 80px, transparent 80px);
   background-size: 100% 5px;
   background-repeat: no-repeat;
@@ -789,6 +785,7 @@
 
 #bm-md iframe,
 #bm-md video {
+  display: block;
   max-width: 100%;
   margin: 1em 0;
   border: 4px solid #1e293b;

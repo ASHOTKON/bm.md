@@ -386,21 +386,12 @@
   border: 1px solid #111111;
 }
 
-#bm-md thead {
-  background-color: #111111;
-  border-bottom: 2px solid #111111;
-}
-
-#bm-md thead th {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   color: #f9f9f7;
   font-weight: 700;
   background-color: #111111;
-}
-
-#bm-md tfoot {
-  background-color: #e8e8e6;
-  font-size: 0.875em;
-  border-top: 2px solid #111111;
+  border-bottom: 2px solid #111111;
 }
 
 #bm-md th,

@@ -74,6 +74,7 @@
   color: #2e5d4e;
   padding: 0.25em 0.75em;
   border-left: 3px solid #2e5d4e;
+  background-color: rgba(46, 93, 78, 0.06);
   background: linear-gradient(90deg, rgba(46, 93, 78, 0.06) 0%, transparent 100%);
 }
 
@@ -405,17 +406,10 @@
   border: 1px solid #2e5d4e;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #2e5d4e;
-}
-
-#bm-md thead th {
   color: #f7f5f0;
-}
-
-#bm-md tfoot {
-  background-color: #ede9e0;
-  font-size: 0.875em;
 }
 
 #bm-md th,
@@ -472,6 +466,7 @@
   margin: 1.5em 0;
   border: none;
   height: 1px;
+  background-color: #2e5d4e;
   background: linear-gradient(90deg, transparent 0%, #d4cfc6 15%, #2e5d4e 50%, #d4cfc6 85%, transparent 100%);
 }
 

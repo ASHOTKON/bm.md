@@ -388,15 +388,10 @@
   font-size: 0.9375em;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: transparent;
   border-bottom: 2px solid #1a1a1a;
-}
-
-#bm-md tfoot {
-  background-color: #f5f3f0;
-  font-size: 0.875em;
-  border-top: 1px solid #1a1a1a;
 }
 
 #bm-md th,

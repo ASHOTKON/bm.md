@@ -75,6 +75,7 @@
   color: #7a4f42;
   padding: 0.25em 0.85em;
   border-left: 4px solid #a65d4c;
+  background-color: rgba(166, 93, 76, 0.08);
   background: linear-gradient(90deg, rgba(166, 93, 76, 0.08) 0%, transparent 100%);
   border-radius: 0 10px 10px 0;
 }
@@ -414,17 +415,10 @@
   box-shadow: 0 2px 10px rgba(166, 93, 76, 0.06);
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #a65d4c;
-}
-
-#bm-md thead th {
   color: #f5f3ef;
-}
-
-#bm-md tfoot {
-  background-color: #eae6e0;
-  font-size: 0.875em;
 }
 
 #bm-md th,
@@ -483,6 +477,7 @@
   margin: 1.5em 0;
   border: none;
   height: 3px;
+  background-color: #a65d4c;
   background: linear-gradient(90deg, transparent 0%, #d8d3cb 18%, #a65d4c 50%, #d8d3cb 82%, transparent 100%);
   border-radius: 2px;
 }

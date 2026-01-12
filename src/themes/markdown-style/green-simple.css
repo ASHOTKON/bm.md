@@ -132,11 +132,13 @@
 #bm-md sup {
   vertical-align: super;
   font-size: 0.75em;
+  line-height: 0;
 }
 
 #bm-md sub {
   vertical-align: sub;
   font-size: 0.75em;
+  line-height: 0;
 }
 
 #bm-md ins {
@@ -149,6 +151,14 @@
   quotes: '「' '」' '『' '』';
   font-style: italic;
   color: #666;
+}
+
+#bm-md q::before {
+  content: open-quote;
+}
+
+#bm-md q::after {
+  content: close-quote;
 }
 
 #bm-md var {
@@ -177,7 +187,6 @@
   color: #2bae85;
   text-decoration: none;
   border-bottom: 1px solid #2bae85;
-  transition: border-bottom-color 0.2s ease;
 }
 
 #bm-md a:hover {
@@ -312,14 +321,10 @@
   font-size: 15px;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background: #f8f9fa;
   border-bottom: 2px solid #2bae85;
-}
-
-#bm-md tfoot {
-  background: #f8f9fa;
-  border-top: 2px solid #2bae85;
 }
 
 #bm-md th {
@@ -375,6 +380,7 @@
 #bm-md hr {
   border: none;
   height: 2px;
+  background-color: #2bae85;
   background: linear-gradient(to right, transparent, #2bae85, transparent);
   margin: 32px 0;
 }
@@ -570,7 +576,6 @@
   font-weight: 700;
   color: #2bae85;
   user-select: none;
-  transition: background 0.2s ease;
 }
 
 #bm-md summary:hover {
@@ -587,6 +592,7 @@
 
 #bm-md iframe,
 #bm-md video {
+  display: block;
   max-width: 100%;
   border-radius: 4px;
   margin: 16px 0;

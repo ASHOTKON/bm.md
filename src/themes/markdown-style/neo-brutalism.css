@@ -439,14 +439,9 @@
   box-shadow: 8px 8px 0 #000000;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #feca57;
-}
-
-#bm-md tfoot {
-  background-color: #00d2d3;
-  font-size: 0.875em;
-  border-top: 5px solid #000000;
 }
 
 #bm-md th,

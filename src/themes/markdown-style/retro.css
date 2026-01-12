@@ -446,17 +446,11 @@
   background-color: #ffffff;
 }
 
-/* 表头 - 渐变标题栏风格 */
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
+  background-color: #000080;
   background: linear-gradient(to right, #000080, #1084d0);
   color: #ffffff;
-}
-
-/* 表尾 - 银灰背景 */
-#bm-md tfoot {
-  background-color: #c0c0c0;
-  font-size: 0.875em;
-  border-top: 2px solid #808080;
 }
 
 #bm-md th,
@@ -515,6 +509,7 @@
   margin: 1.25em 0;
   border: none;
   height: 4px;
+  background-color: #808080;
   background: linear-gradient(to bottom, #808080 0%, #808080 50%, #ffffff 50%, #ffffff 100%);
 }
 

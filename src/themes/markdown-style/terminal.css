@@ -457,14 +457,9 @@
   border: 1px solid #1f521f;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #1a1a1a;
-}
-
-#bm-md tfoot {
-  background-color: #0d0d0d;
-  font-size: 0.875em;
-  border-top: 1px solid #1f521f;
 }
 
 #bm-md th,
@@ -524,6 +519,7 @@
   margin: 1.5em 0;
   border: none;
   height: 3px;
+  background-color: #1f521f;
   background: repeating-linear-gradient(90deg, #1f521f 0px, #1f521f 4px, transparent 4px, transparent 8px);
 }
 

@@ -95,6 +95,7 @@
   font-size: 1.125em;
   padding-left: 0.6em;
   border-left: 5px solid #2a5090;
+  background-color: rgba(16, 64, 192, 0.08);
   background: linear-gradient(90deg, rgba(16, 64, 192, 0.08) 0%, transparent 100%);
 }
 
@@ -430,15 +431,10 @@
   box-shadow: 6px 6px 0 #121212;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
   background-color: #1040c0;
   color: #ffffff;
-}
-
-#bm-md tfoot {
-  background-color: #e0e0e0;
-  font-size: 0.875em;
-  border-top: 4px solid #121212;
 }
 
 #bm-md th,
@@ -501,6 +497,7 @@
   margin: 1.75em 0;
   border: none;
   height: 8px;
+  background-color: #d02020;
   background: linear-gradient(90deg, #d02020 33.33%, #f0c020 33.33%, #f0c020 66.66%, #1040c0 66.66%);
   box-shadow: 4px 4px 0 #121212;
 }

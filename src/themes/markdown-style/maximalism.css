@@ -558,14 +558,10 @@
     16px 16px 0 #ffe600;
 }
 
-#bm-md thead {
+/* 表头首行样式（替代 thead） */
+#bm-md tr:first-child th {
+  background-color: #ff3af2;
   background: linear-gradient(135deg, #ff3af2 0%, #7b2fff 100%);
-}
-
-#bm-md tfoot {
-  background: linear-gradient(135deg, #00f5d4 0%, #7b2fff 100%);
-  font-size: 0.875em;
-  border-top: 5px solid #ffe600;
 }
 
 #bm-md th,
@@ -636,6 +632,7 @@
   margin: 1.85em 0;
   border: none;
   height: 8px;
+  background-color: #ff3af2;
   background: linear-gradient(90deg, #ff3af2, #ffe600, #00f5d4, #7b2fff, #ff6b35, #ff3af2);
   background-size: 200% 100%;
   box-shadow:
