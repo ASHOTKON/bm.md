@@ -101,6 +101,10 @@ export const markdownStyles: MarkdownStyle[] = [
   },
 ]
 
+export const markdownStyleIds = markdownStyles.map(s => s.id) as [string, ...string[]]
+
+export type MarkdownStyleId = (typeof markdownStyles)[number]['id']
+
 /**
  * Get markdown style by ID
  */
