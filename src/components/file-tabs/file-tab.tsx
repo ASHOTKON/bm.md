@@ -62,7 +62,11 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
 
   if (isEditing) {
     return (
-      <div className="flex h-7 shrink-0 items-center gap-1.5 bg-background px-2">
+      <div
+        role="tab"
+        aria-selected={isActive}
+        className="flex h-7 shrink-0 items-center gap-1.5 bg-background px-2"
+      >
         <FileText className="size-3.5 shrink-0 text-muted-foreground" />
         <input
           ref={inputRef}
