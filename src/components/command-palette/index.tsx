@@ -145,9 +145,8 @@ export function CommandPalette() {
 
   const handleCopyPlatform = useCallback((platform: SupportedPlatform) => async () => {
     closePanel()
-    trackEvent('copy', platform, 'menu')
-    await copyPlatform(platform, platformCopyGetters[platform])
-  }, [closePanel, platformCopyGetters])
+    await copyPlatform({ platform, markdownStyle, codeTheme, source: 'menu', getHtml: platformCopyGetters[platform] })
+  }, [closePanel, markdownStyle, codeTheme, platformCopyGetters])
 
   const handleExportImage = useCallback(async () => {
     closePanel()

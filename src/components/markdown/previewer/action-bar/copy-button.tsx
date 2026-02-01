@@ -8,7 +8,7 @@ import JuejinIcon from '@/icons/juejin'
 import WechatIcon from '@/icons/wechat'
 import ZhihuIcon from '@/icons/zhihu'
 import { copyPlatform } from '@/lib/actions'
-import { trackEvent } from '@/lib/analytics'
+import { usePreviewStore } from '@/stores/preview'
 import { usePlatformCopy } from './use-platform-copy'
 
 const platformIcons: Record<SupportedPlatform, ReactNode> = {
@@ -25,10 +25,11 @@ interface CopyButtonProps {
 export function CopyButton({ platform }: CopyButtonProps) {
   const { getHtml, isLoading } = usePlatformCopy(platform)
   const config = platformConfig[platform]
+  const markdownStyle = usePreviewStore(state => state.markdownStyle)
+  const codeTheme = usePreviewStore(state => state.codeTheme)
 
   const onCopyClick = async () => {
-    trackEvent('copy', platform, 'button')
-    await copyPlatform(platform, getHtml)
+    await copyPlatform({ platform, markdownStyle, codeTheme, source: 'button', getHtml })
   }
 
   return (
