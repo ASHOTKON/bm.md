@@ -5,6 +5,7 @@ import { CopyButton } from './copy-button'
 import { CustomCssDialog } from './custom-css-dialog'
 import { ExportButton } from './export-button'
 import { MarkdownStyleMenu } from './markdown-style-menu'
+import { MermaidThemeMenu } from './mermaid-theme-menu'
 
 export function PreviewerActionBar() {
   return (
@@ -17,6 +18,7 @@ export function PreviewerActionBar() {
       <Separator orientation="vertical" className="mx-2" />
       <MarkdownStyleMenu />
       <CodeThemeMenu />
+      <MermaidThemeMenu />
       <CustomCssDialog />
     </TooltipProvider>
   )

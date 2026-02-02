@@ -1,4 +1,5 @@
 import type { Platform } from '@/lib/markdown/render/adapters'
+import type { MermaidThemeId } from '@/themes/mermaid-theme'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -19,6 +20,9 @@ interface PreviewState {
 
   codeTheme: string
   setCodeTheme: (theme: string) => void
+
+  mermaidTheme: MermaidThemeId
+  setMermaidTheme: (theme: MermaidThemeId) => void
 
   customCss: string
   setCustomCss: (css: string) => void
@@ -44,6 +48,9 @@ export const usePreviewStore = create<PreviewState>()(
       codeTheme: 'kimbie-light',
       setCodeTheme: codeTheme => set({ codeTheme, renderedHtmlMap: {} }),
 
+      mermaidTheme: '',
+      setMermaidTheme: mermaidTheme => set({ mermaidTheme, renderedHtmlMap: {} }),
+
       customCss: '',
       setCustomCss: customCss => set({ customCss, renderedHtmlMap: {} }),
 
@@ -60,6 +67,7 @@ export const usePreviewStore = create<PreviewState>()(
         userPreferredWidth: state.userPreferredWidth,
         markdownStyle: state.markdownStyle,
         codeTheme: state.codeTheme,
+        mermaidTheme: state.mermaidTheme,
         customCss: state.customCss,
       }),
     },

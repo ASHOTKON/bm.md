@@ -66,6 +66,27 @@
                     "default": "kimbie-light",
                     "description": "代码块高亮主题 ID"
                   },
+                  "mermaidTheme": {
+                    "enum": [
+                      "",
+                      "zinc-dark",
+                      "tokyo-night",
+                      "tokyo-night-storm",
+                      "tokyo-night-light",
+                      "catppuccin-mocha",
+                      "catppuccin-latte",
+                      "nord",
+                      "nord-light",
+                      "dracula",
+                      "github-light",
+                      "github-dark",
+                      "solarized-light",
+                      "solarized-dark",
+                      "one-dark"
+                    ],
+                    "default": "",
+                    "description": "Mermaid 流程图主题 ID，空字符串表示使用默认主题"
+                  },
                   "customCss": {
                     "type": "string",
                     "maxLength": 50000,

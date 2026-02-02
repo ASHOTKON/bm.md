@@ -6,7 +6,7 @@ import rehypeGithubAlert from 'rehype-github-alert'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
+import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkGfm from 'remark-gfm'
@@ -18,12 +18,14 @@ import { loadCodeThemeCss } from '@/themes/code-theme/loader'
 import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
 import { loadKatexCss } from '../utils'
 import { getAdapterPlugins } from './adapters'
-import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
+import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
+import { sanitizeSchema } from './sanitize-schema'
 
 export interface RenderOptions {
   markdown: string
   markdownStyle?: string
   codeTheme?: string
+  mermaidTheme?: string
   customCss?: string
   enableFootnoteLinks?: boolean
   openLinksInNewWindow?: boolean
@@ -35,36 +37,13 @@ export interface RenderOptions {
 interface ProcessorOptions {
   enableFootnoteLinks?: boolean
   openLinksInNewWindow?: boolean
+  mermaidTheme?: string
   platform?: Platform
   footnoteLabel?: string
   referenceTitle?: string
 }
 
-const sanitizeSchema = {
-  ...defaultSchema,
-  protocols: {
-    ...(defaultSchema.protocols || {}),
-    href: ['http', 'https', 'mailto', 'tel'],
-  },
-  tagNames: [
-    ...(defaultSchema.tagNames || []),
-    'svg',
-    'path',
-    'figcaption',
-    'section',
-  ],
-  attributes: {
-    ...defaultSchema.attributes,
-    a: [...(defaultSchema.attributes?.a || []), 'target', 'rel'],
-    div: [...(defaultSchema.attributes?.div || []), 'className'],
-    section: [...(defaultSchema.attributes?.section || []), 'className'],
-    p: [...(defaultSchema.attributes?.p || []), 'className'],
-    svg: ['className', 'viewBox', 'version', 'width', 'height', 'ariaHidden'],
-    path: ['d'],
-  },
-}
-
-function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
+function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -88,6 +67,7 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, platform =
     .use(rehypeRaw)
     .use(rehypeGithubAlert)
     .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeMermaid, { theme: mermaidTheme })
     .use(rehypeKatex)
     .use(rehypeHighlight)
     .use(rehypeFigureWrapper)
@@ -119,6 +99,7 @@ export async function render(options: RenderOptions): Promise<string> {
     markdown,
     markdownStyle,
     codeTheme,
+    mermaidTheme,
     customCss = '',
     enableFootnoteLinks = true,
     openLinksInNewWindow = true,
@@ -127,7 +108,7 @@ export async function render(options: RenderOptions): Promise<string> {
     referenceTitle = 'References',
   } = options
 
-  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, platform, footnoteLabel, referenceTitle })
+  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, platform, footnoteLabel, referenceTitle })
   const html = (await processor.process(markdown)).toString()
 
   const hasKatex = html.includes('class="katex"')

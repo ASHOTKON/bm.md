@@ -8,6 +8,7 @@ import {
   FilePlus,
   Palette,
   RotateCcw,
+  Workflow,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useCallback, useMemo, useState } from 'react'
@@ -56,6 +57,7 @@ import {
 } from '@/stores/preview'
 import { codeThemes } from '@/themes/code-theme'
 import { markdownStyles } from '@/themes/markdown-style'
+import { mermaidThemes } from '@/themes/mermaid-theme'
 import { useHotkeys } from './use-hotkeys'
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent)
@@ -88,6 +90,8 @@ export function CommandPalette() {
   const setMarkdownStyle = usePreviewStore(state => state.setMarkdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
   const setCodeTheme = usePreviewStore(state => state.setCodeTheme)
+  const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
+  const setMermaidTheme = usePreviewStore(state => state.setMermaidTheme)
 
   const editorStore = useEditorStore()
 
@@ -214,6 +218,12 @@ export function CommandPalette() {
     resetSubMenu()
     closePanel()
   }, [setCodeTheme, resetSubMenu, closePanel])
+
+  const handleSelectMermaidTheme = useCallback((id: string) => {
+    setMermaidTheme(id)
+    resetSubMenu()
+    closePanel()
+  }, [setMermaidTheme, resetSubMenu, closePanel])
 
   const hotkeyHandlers = useMemo(() => [
     { key: editorCommandConfig.import.hotkey.key, handler: handleImport },
@@ -343,6 +353,11 @@ export function CommandPalette() {
             代码主题
             <CommandShortcut><ChevronRight className="size-4" /></CommandShortcut>
           </CommandItem>
+          <CommandItem onSelect={() => setSubMenu('mermaidTheme')}>
+            <Workflow className="size-4" />
+            流程图主题
+            <CommandShortcut><ChevronRight className="size-4" /></CommandShortcut>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -411,6 +426,26 @@ export function CommandPalette() {
     </CommandGroup>
   )
 
+  const renderMermaidThemeMenu = () => (
+    <CommandGroup heading="流程图主题">
+      <CommandItem onSelect={resetSubMenu}>
+        <ChevronLeft className="size-4" />
+        返回
+      </CommandItem>
+      <CommandSeparator />
+      {mermaidThemes.map(theme => (
+        <CommandItem
+          key={theme.id}
+          onSelect={() => handleSelectMermaidTheme(theme.id)}
+          data-checked={mermaidTheme === theme.id}
+        >
+          <Workflow className="size-4" />
+          {theme.name}
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  )
+
   return (
     <>
       <CommandDialog
@@ -426,6 +461,7 @@ export function CommandPalette() {
             {subMenu === null && renderMainMenu()}
             {subMenu === 'markdownStyle' && renderMarkdownStyleMenu()}
             {subMenu === 'codeTheme' && renderCodeThemeMenu()}
+            {subMenu === 'mermaidTheme' && renderMermaidThemeMenu()}
           </CommandList>
         </Command>
       </CommandDialog>
