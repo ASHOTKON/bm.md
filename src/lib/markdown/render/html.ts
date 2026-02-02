@@ -18,7 +18,7 @@ import { loadCodeThemeCss } from '@/themes/code-theme/loader'
 import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
 import { loadKatexCss } from '../utils'
 import { getAdapterPlugins } from './adapters'
-import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
+import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeInfographic, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
 import { sanitizeSchema } from './sanitize-schema'
 
 export interface RenderOptions {
@@ -26,6 +26,8 @@ export interface RenderOptions {
   markdownStyle?: string
   codeTheme?: string
   mermaidTheme?: string
+  infographicTheme?: string
+  infographicPalette?: string
   customCss?: string
   enableFootnoteLinks?: boolean
   openLinksInNewWindow?: boolean
@@ -38,12 +40,14 @@ interface ProcessorOptions {
   enableFootnoteLinks?: boolean
   openLinksInNewWindow?: boolean
   mermaidTheme?: string
+  infographicTheme?: string
+  infographicPalette?: string
   platform?: Platform
   footnoteLabel?: string
   referenceTitle?: string
 }
 
-function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
+function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -68,6 +72,7 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidThe
     .use(rehypeGithubAlert)
     .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeMermaid, { theme: mermaidTheme })
+    .use(rehypeInfographic, { theme: infographicTheme, palette: infographicPalette })
     .use(rehypeKatex)
     .use(rehypeHighlight)
     .use(rehypeFigureWrapper)
@@ -100,6 +105,8 @@ export async function render(options: RenderOptions): Promise<string> {
     markdownStyle,
     codeTheme,
     mermaidTheme,
+    infographicTheme,
+    infographicPalette,
     customCss = '',
     enableFootnoteLinks = true,
     openLinksInNewWindow = true,
@@ -108,7 +115,7 @@ export async function render(options: RenderOptions): Promise<string> {
     referenceTitle = 'References',
   } = options
 
-  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, platform, footnoteLabel, referenceTitle })
+  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform, footnoteLabel, referenceTitle })
   const html = (await processor.process(markdown)).toString()
 
   const hasKatex = html.includes('class="katex"')

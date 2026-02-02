@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import parse from './html'
+import { parse } from './html'
 
 describe('html -> markdown parse', () => {
   it('converts paragraphs to markdown text', async () => {

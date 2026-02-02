@@ -6,7 +6,9 @@ import {
   ChevronRight,
   Code,
   FilePlus,
+  ImageIcon,
   Palette,
+  PaletteIcon,
   RotateCcw,
   Workflow,
 } from 'lucide-react'
@@ -56,6 +58,7 @@ import {
   usePreviewStore,
 } from '@/stores/preview'
 import { codeThemes } from '@/themes/code-theme'
+import { infographicPalettes, infographicThemes } from '@/themes/infographic-theme'
 import { markdownStyles } from '@/themes/markdown-style'
 import { mermaidThemes } from '@/themes/mermaid-theme'
 import { useHotkeys } from './use-hotkeys'
@@ -92,6 +95,8 @@ export function CommandPalette() {
   const setCodeTheme = usePreviewStore(state => state.setCodeTheme)
   const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
   const setMermaidTheme = usePreviewStore(state => state.setMermaidTheme)
+  const infographic = usePreviewStore(state => state.infographic)
+  const setInfographic = usePreviewStore(state => state.setInfographic)
 
   const editorStore = useEditorStore()
 
@@ -149,8 +154,17 @@ export function CommandPalette() {
 
   const handleCopyPlatform = useCallback((platform: SupportedPlatform) => async () => {
     closePanel()
-    await copyPlatform({ platform, markdownStyle, codeTheme, source: 'menu', getHtml: platformCopyGetters[platform] })
-  }, [closePanel, markdownStyle, codeTheme, platformCopyGetters])
+    await copyPlatform({
+      platform,
+      markdownStyle,
+      codeTheme,
+      mermaidTheme,
+      infographicTheme: infographic.theme,
+      infographicPalette: infographic.palette,
+      source: 'menu',
+      getHtml: platformCopyGetters[platform],
+    })
+  }, [closePanel, markdownStyle, codeTheme, mermaidTheme, infographic, platformCopyGetters])
 
   const handleExportImage = useCallback(async () => {
     closePanel()
@@ -224,6 +238,18 @@ export function CommandPalette() {
     resetSubMenu()
     closePanel()
   }, [setMermaidTheme, resetSubMenu, closePanel])
+
+  const handleSelectInfographicTheme = useCallback((id: string) => {
+    setInfographic({ theme: id })
+    resetSubMenu()
+    closePanel()
+  }, [setInfographic, resetSubMenu, closePanel])
+
+  const handleSelectInfographicPalette = useCallback((id: string) => {
+    setInfographic({ palette: id })
+    resetSubMenu()
+    closePanel()
+  }, [setInfographic, resetSubMenu, closePanel])
 
   const hotkeyHandlers = useMemo(() => [
     { key: editorCommandConfig.import.hotkey.key, handler: handleImport },
@@ -358,6 +384,16 @@ export function CommandPalette() {
             流程图主题
             <CommandShortcut><ChevronRight className="size-4" /></CommandShortcut>
           </CommandItem>
+          <CommandItem onSelect={() => setSubMenu('infographicTheme')}>
+            <ImageIcon className="size-4" />
+            信息图主题
+            <CommandShortcut><ChevronRight className="size-4" /></CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => setSubMenu('infographicPalette')}>
+            <PaletteIcon className="size-4" />
+            信息图色板
+            <CommandShortcut><ChevronRight className="size-4" /></CommandShortcut>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -446,6 +482,46 @@ export function CommandPalette() {
     </CommandGroup>
   )
 
+  const renderInfographicThemeMenu = () => (
+    <CommandGroup heading="信息图主题">
+      <CommandItem onSelect={resetSubMenu}>
+        <ChevronLeft className="size-4" />
+        返回
+      </CommandItem>
+      <CommandSeparator />
+      {infographicThemes.map(theme => (
+        <CommandItem
+          key={theme.id}
+          onSelect={() => handleSelectInfographicTheme(theme.id)}
+          data-checked={infographic.theme === theme.id}
+        >
+          <ImageIcon className="size-4" />
+          {theme.name}
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  )
+
+  const renderInfographicPaletteMenu = () => (
+    <CommandGroup heading="信息图色板">
+      <CommandItem onSelect={resetSubMenu}>
+        <ChevronLeft className="size-4" />
+        返回
+      </CommandItem>
+      <CommandSeparator />
+      {infographicPalettes.map(palette => (
+        <CommandItem
+          key={palette.id}
+          onSelect={() => handleSelectInfographicPalette(palette.id)}
+          data-checked={infographic.palette === palette.id}
+        >
+          <PaletteIcon className="size-4" />
+          {palette.name}
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  )
+
   return (
     <>
       <CommandDialog
@@ -462,6 +538,8 @@ export function CommandPalette() {
             {subMenu === 'markdownStyle' && renderMarkdownStyleMenu()}
             {subMenu === 'codeTheme' && renderCodeThemeMenu()}
             {subMenu === 'mermaidTheme' && renderMermaidThemeMenu()}
+            {subMenu === 'infographicTheme' && renderInfographicThemeMenu()}
+            {subMenu === 'infographicPalette' && renderInfographicPaletteMenu()}
           </CommandList>
         </Command>
       </CommandDialog>

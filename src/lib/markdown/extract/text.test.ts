@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import extract from './text'
+import { extract } from './text'
 
 describe('markdown -> text extract', () => {
   it('keeps paragraph separation with newlines', async () => {

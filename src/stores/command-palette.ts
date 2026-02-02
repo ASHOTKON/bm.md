@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type SubMenu = 'markdownStyle' | 'codeTheme' | 'mermaidTheme' | null
+type SubMenu = 'markdownStyle' | 'codeTheme' | 'mermaidTheme' | 'infographicTheme' | 'infographicPalette' | null
 
 interface CommandPaletteState {
   open: boolean

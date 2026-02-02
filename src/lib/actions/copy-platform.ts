@@ -10,6 +10,9 @@ interface CopyPlatformOptions {
   platform: SupportedPlatform
   markdownStyle: string
   codeTheme: string
+  mermaidTheme: string
+  infographicTheme: string
+  infographicPalette: string
   source: 'button' | 'menu'
   getHtml: () => Promise<string>
 }
@@ -18,6 +21,9 @@ export async function copyPlatform({
   platform,
   markdownStyle,
   codeTheme,
+  mermaidTheme,
+  infographicTheme,
+  infographicPalette,
   source,
   getHtml,
 }: CopyPlatformOptions) {
@@ -36,7 +42,13 @@ export async function copyPlatform({
     const success = await copyHtml(html)
     if (success) {
       toast.success(config.successMessage)
-      trackEvent('copy', platform, source, { markdownStyle, codeTheme })
+      trackEvent('copy', platform, source, {
+        markdownStyle,
+        codeTheme,
+        mermaidTheme,
+        infographicTheme,
+        infographicPalette,
+      })
     }
     else {
       toast.error('复制失败')

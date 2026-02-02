@@ -27,9 +27,11 @@ export function CopyButton({ platform }: CopyButtonProps) {
   const config = platformConfig[platform]
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
+  const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
+  const infographic = usePreviewStore(state => state.infographic)
 
   const onCopyClick = async () => {
-    await copyPlatform({ platform, markdownStyle, codeTheme, source: 'button', getHtml })
+    await copyPlatform({ platform, markdownStyle, codeTheme, mermaidTheme, infographicTheme: infographic.theme, infographicPalette: infographic.palette, source: 'button', getHtml })
   }
 
   return (

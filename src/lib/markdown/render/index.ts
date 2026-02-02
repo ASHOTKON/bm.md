@@ -1,6 +1,7 @@
 import { ORPCError, os } from '@orpc/server'
 import * as z from 'zod'
 import { codeThemeIds } from '@/themes/code-theme'
+import { infographicPaletteIds, infographicThemeIds } from '@/themes/infographic-theme'
 import { markdownStyleIds } from '@/themes/markdown-style'
 import { mermaidThemeIds } from '@/themes/mermaid-theme'
 import { INPUT_SIZE_ERROR, MAX_INPUT_SIZE } from '../constants'
@@ -10,6 +11,8 @@ export const platformSchema = z.enum(platforms)
 export const markdownStyleSchema = z.enum(markdownStyleIds)
 export const codeThemeSchema = z.enum(codeThemeIds)
 export const mermaidThemeSchema = z.enum(mermaidThemeIds)
+export const infographicThemeSchema = z.enum(infographicThemeIds)
+export const infographicPaletteSchema = z.enum(infographicPaletteIds)
 
 export const renderDefinition = {
   name: 'render',
@@ -20,6 +23,8 @@ export const renderDefinition = {
     markdownStyle: markdownStyleSchema.optional().default('ayu-light').describe('Markdown 排版样式 ID'),
     codeTheme: codeThemeSchema.optional().default('kimbie-light').describe('代码块高亮主题 ID'),
     mermaidTheme: mermaidThemeSchema.optional().default('').describe('Mermaid 流程图主题 ID，空字符串表示使用默认主题'),
+    infographicTheme: infographicThemeSchema.optional().default('default').describe('Infographic 信息图主题 ID'),
+    infographicPalette: infographicPaletteSchema.optional().default('antv').describe('Infographic 信息图配色 ID'),
     customCss: z.string().max(50000, '自定义 CSS 不能超过 50000 字符').optional().default('').describe('自定义 CSS 样式，在主题样式之后应用。选择器需约束在 #bm-md 下，例如：#bm-md h1 { color: red; }'),
     enableFootnoteLinks: z.boolean().optional().default(true).describe('是否将文中链接自动转换为脚注形式，便于阅读时查看原始链接'),
     openLinksInNewWindow: z.boolean().optional().default(true).describe('是否为所有外部链接添加 target="_blank"，在新窗口打开'),

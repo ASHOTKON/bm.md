@@ -12,11 +12,13 @@
     "test": "vitest run",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit",
     "shadcn": "shadcn",
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.7.3",
+    "@antv/infographic": "^0.2.13",
     "@base-ui/react": "^1.0.0",
     "@catppuccin/highlightjs": "^1.0.1",
     "@codemirror/commands": "^6.10.1",

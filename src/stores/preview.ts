@@ -1,4 +1,5 @@
 import type { Platform } from '@/lib/markdown/render/adapters'
+import type { InfographicPaletteId, InfographicThemeId } from '@/themes/infographic-theme'
 import type { MermaidThemeId } from '@/themes/mermaid-theme'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -7,6 +8,11 @@ export const PREVIEW_WIDTH_MOBILE = 415
 export const PREVIEW_WIDTH_DESKTOP = 768
 
 type PreviewWidth = typeof PREVIEW_WIDTH_MOBILE | typeof PREVIEW_WIDTH_DESKTOP
+
+export interface InfographicSettings {
+  theme: InfographicThemeId
+  palette: InfographicPaletteId
+}
 
 interface PreviewState {
   previewWidth: PreviewWidth
@@ -23,6 +29,9 @@ interface PreviewState {
 
   mermaidTheme: MermaidThemeId
   setMermaidTheme: (theme: MermaidThemeId) => void
+
+  infographic: InfographicSettings
+  setInfographic: (settings: Partial<InfographicSettings>) => void
 
   customCss: string
   setCustomCss: (css: string) => void
@@ -51,6 +60,12 @@ export const usePreviewStore = create<PreviewState>()(
       mermaidTheme: '',
       setMermaidTheme: mermaidTheme => set({ mermaidTheme, renderedHtmlMap: {} }),
 
+      infographic: { theme: 'default', palette: 'antv' },
+      setInfographic: settings => set(state => ({
+        infographic: { ...state.infographic, ...settings },
+        renderedHtmlMap: {},
+      })),
+
       customCss: '',
       setCustomCss: customCss => set({ customCss, renderedHtmlMap: {} }),
 
@@ -68,6 +83,7 @@ export const usePreviewStore = create<PreviewState>()(
         markdownStyle: state.markdownStyle,
         codeTheme: state.codeTheme,
         mermaidTheme: state.mermaidTheme,
+        infographic: state.infographic,
         customCss: state.customCss,
       }),
     },
