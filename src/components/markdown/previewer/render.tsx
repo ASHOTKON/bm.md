@@ -20,6 +20,8 @@ export default function MarkdownRender() {
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
+  const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
+  const infographic = usePreviewStore(state => state.infographic)
   const customCss = usePreviewStore(state => state.customCss)
   const renderedHtml = usePreviewStore(state => state.getRenderedHtml('html'))
   const setRenderedHtml = usePreviewStore(state => state.setRenderedHtml)
@@ -125,6 +127,9 @@ export default function MarkdownRender() {
       nextContent: string,
       styleId: string,
       themeId: string,
+      mermaidThemeId: string,
+      infographicThemeId: string,
+      infographicPaletteId: string,
       customCssValue: string,
       enableRefLinks: boolean,
       openNewWin: boolean,
@@ -135,6 +140,9 @@ export default function MarkdownRender() {
           markdown: nextContent,
           markdownStyle: styleId,
           codeTheme: themeId,
+          mermaidTheme: mermaidThemeId,
+          infographicTheme: infographicThemeId,
+          infographicPalette: infographicPaletteId,
           customCss: customCssValue,
           enableFootnoteLinks: enableRefLinks,
           openLinksInNewWindow: openNewWin,
@@ -158,13 +166,13 @@ export default function MarkdownRender() {
   useEffect(() => {
     clearRenderedHtmlCache()
     canceledRef.current = false
-    scheduleRender(content, markdownStyle, codeTheme, customCss, enableFootnoteLinks, openLinksInNewWindow)
+    scheduleRender(content, markdownStyle, codeTheme, mermaidTheme, infographic.theme, infographic.palette, customCss, enableFootnoteLinks, openLinksInNewWindow)
 
     return () => {
       canceledRef.current = true
       scheduleRender.cancel()
     }
-  }, [content, markdownStyle, codeTheme, customCss, enableFootnoteLinks, openLinksInNewWindow, scheduleRender, clearRenderedHtmlCache])
+  }, [content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, scheduleRender, clearRenderedHtmlCache])
 
   const isMobile = previewWidth === PREVIEW_WIDTH_MOBILE
 

@@ -66,6 +66,44 @@
                     "default": "kimbie-light",
                     "description": "代码块高亮主题 ID"
                   },
+                  "mermaidTheme": {
+                    "enum": [
+                      "",
+                      "catppuccin-latte",
+                      "catppuccin-mocha",
+                      "dracula",
+                      "github-dark",
+                      "github-light",
+                      "nord",
+                      "nord-light",
+                      "one-dark",
+                      "solarized-dark",
+                      "solarized-light",
+                      "tokyo-night",
+                      "tokyo-night-light",
+                      "tokyo-night-storm",
+                      "zinc-dark"
+                    ],
+                    "default": "",
+                    "description": "Mermaid 流程图主题 ID，空字符串表示使用默认主题"
+                  },
+                  "infographicTheme": {
+                    "enum": [
+                      "default",
+                      "dark",
+                      "hand-drawn"
+                    ],
+                    "default": "default",
+                    "description": "Infographic 信息图主题 ID"
+                  },
+                  "infographicPalette": {
+                    "enum": [
+                      "antv",
+                      "spectral"
+                    ],
+                    "default": "antv",
+                    "description": "Infographic 信息图配色 ID"
+                  },
                   "customCss": {
                     "type": "string",
                     "maxLength": 50000,

@@ -178,4 +178,9 @@ node-functions
 dev-dist/
 
 **/*.local*
+
 .claude
+.opencode
+.agents
+
+opencode.json
