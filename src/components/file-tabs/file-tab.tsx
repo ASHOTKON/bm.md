@@ -83,6 +83,8 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={cn(
         `
           group flex h-7 shrink-0 cursor-pointer items-center gap-1.5 px-2
