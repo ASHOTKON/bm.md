@@ -37,6 +37,8 @@ pnpm dev
 - **样式**: [Tailwind CSS 4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)
 - **部署**: [Nitro](https://nitro.build) (支持 Cloudflare Workers / Vercel / Netlify / Docker / Alibaba ESA / Tencent EdgeOne 等)
 
+#阿里云ESA Pages #阿里云云工开物
+
 本项目由阿里云ESA提供加速、计算和保护: [![Alibaba ESA](https://img.alicdn.com/imgextra/i3/O1CN01H1UU3i1Cti9lYtFrs_!!6000000000139-2-tps-7534-844.png)](https://alibaba.bm.md/)
 
 阿里云部署配置：
