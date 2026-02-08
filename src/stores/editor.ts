@@ -65,6 +65,7 @@ export const useEditorStore = create<EditorState>()(
     }),
     {
       name: 'bm.md.editor',
+      skipHydration: true,
     },
   ),
 )

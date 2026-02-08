@@ -7,6 +7,7 @@ export default antfu({
   pnpm: false,
   rules: {
     'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
+    'react-refresh/only-export-components': 'off',
   },
   ignores: [
     '**/*.gen.ts',

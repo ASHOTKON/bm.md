@@ -10,8 +10,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { editorCommandConfig, navigationConfig, viewModeConfig } from '@/config'
-import { getIcon, toggleTheme } from '@/lib/actions'
+import { toggleTheme } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
+import { getIcon } from '@/lib/icon-map'
 import {
   PREVIEW_WIDTH_DESKTOP,
   PREVIEW_WIDTH_MOBILE,

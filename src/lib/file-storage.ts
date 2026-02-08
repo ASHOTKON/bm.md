@@ -18,6 +18,10 @@ let dbUnavailableReason = ''
 const memoryFallback = new Map<string, string>()
 
 function getDB(): Promise<IDBPDatabase<FileDB>> {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('IndexedDB 仅在浏览器环境可用'))
+  }
+
   if (dbUnavailable) {
     return Promise.reject(new Error(dbUnavailableReason))
   }

@@ -30,7 +30,7 @@ export function trackEvent(
 ): void {
   if (import.meta.env.DEV)
     return
-  if (!window.rybbit?.event)
+  if (typeof window === 'undefined' || !window.rybbit?.event)
     return
 
   const eventName = `${module}:${action}:${source}`

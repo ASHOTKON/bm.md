@@ -43,12 +43,12 @@ import {
   exportMarkdown,
   exportPdf,
   formatMarkdown,
-  getIcon,
   handleImportFiles,
   printPreview,
   toggleTheme,
 } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
+import { getIcon } from '@/lib/icon-map'
 import { useCommandPaletteStore } from '@/stores/command-palette'
 import { useEditorStore } from '@/stores/editor'
 import { useFilesStore } from '@/stores/files'

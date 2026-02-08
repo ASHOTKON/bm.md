@@ -1,4 +1,4 @@
-import type { IconName } from '@/lib/actions'
+import type { IconName } from '@/lib/icon-map'
 import type { EditorBooleanKey, EditorBooleanSetterKey } from '@/stores/editor'
 import { appConfig } from './app'
 

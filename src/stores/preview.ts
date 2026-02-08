@@ -78,6 +78,7 @@ export const usePreviewStore = create<PreviewState>()(
     }),
     {
       name: 'bm.md.preview',
+      skipHydration: true,
       partialize: state => ({
         userPreferredWidth: state.userPreferredWidth,
         markdownStyle: state.markdownStyle,
