@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 
 export function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center">
+    <div className="flex min-h-dvh flex-col items-center justify-center">
       <h1 className="doto-font text-[12rem] leading-none text-foreground/10">
         404
       </h1>

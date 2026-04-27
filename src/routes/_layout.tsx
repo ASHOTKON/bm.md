@@ -22,12 +22,7 @@ function App() {
   }, [])
 
   return (
-    <div
-      className={`
-        flex h-screen min-h-[700px] min-w-5xl flex-col overflow-hidden
-        supports-[height:100dvh]:h-dvh
-      `}
-    >
+    <div className="flex h-dvh min-h-[700px] min-w-5xl flex-col overflow-hidden">
       <ResizablePanelGroup tagName="main" className="flex-1" direction="horizontal">
         <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
           <MarkdownEditor></MarkdownEditor>
