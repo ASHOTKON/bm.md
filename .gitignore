@@ -176,6 +176,7 @@ node-functions
 
 .worktrees/
 dev-dist/
+bin/
 
 **/*.local*
 

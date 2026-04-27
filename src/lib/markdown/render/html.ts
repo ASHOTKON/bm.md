@@ -126,11 +126,9 @@ export async function render(options: RenderOptions): Promise<string> {
     return html
   }
 
-  const [markdownStyleCss, codeThemeCss, katexCss] = await Promise.all([
-    markdownStyle ? loadMarkdownStyleCss(markdownStyle) : Promise.resolve(''),
-    codeTheme ? loadCodeThemeCss(codeTheme) : Promise.resolve(''),
-    hasKatex ? loadKatexCss() : Promise.resolve(''),
-  ])
+  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
+  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
+  const katexCss = hasKatex ? loadKatexCss() : ''
   const css = [
     markdownStyleCss ?? '',
     codeThemeCss ?? '',

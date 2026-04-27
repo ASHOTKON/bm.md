@@ -4,7 +4,7 @@ import { minify } from 'html-minifier-terser'
 export function htmlRawMinifyPlugin(): Plugin {
   return {
     name: 'html-raw-minify',
-    enforce: 'pre',
+    enforce: 'post',
     async transform(code, id) {
       if (!id.endsWith('.html?raw')) {
         return

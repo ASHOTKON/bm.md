@@ -14,7 +14,15 @@ bm.md 是一个专业的 Markdown 排版工具，提供以下核心能力：
 - **纯文本提取**：从 Markdown 中提取纯文本，移除所有格式标记
 - **格式校验与修复**：自动检测并修复 Markdown 格式问题
 
-所有 API 均返回 JSON 格式响应，结果在 `result` 字段中。
+优先使用本地 CLI，只有在无 Node.js 环境或无法执行命令时才使用 REST API。
+
+## 执行优先级
+
+1. **优先使用 CLI**：如果本地可执行 `node --version`，使用 `bmmd` 命令处理 Markdown。
+2. **CLI 调用方式**：如果系统已安装 `bmmd`，直接使用；否则使用 `npx -y bmmd` 临时运行。
+3. **兜底使用 REST API**：如果没有 Node.js 环境、无法执行本地命令，或用户明确要求远程调用，再使用 `https://bm.md/api/markdown/*`。
+
+CLI 默认将结果输出到 stdout，可通过 `--output <file>` 写入文件。REST API 返回 JSON，结果在 `result` 字段中。
 
 ---
 
@@ -23,6 +31,18 @@ bm.md 是一个专业的 Markdown 排版工具，提供以下核心能力：
 ### 1. Markdown 渲染
 
 将 Markdown 源文本渲染为带内联样式的 HTML，可直接复制到富文本编辑器。
+
+**CLI 示例（优先）**:
+
+```bash
+npx -y bmmd render article.md --platform wechat --output article.html
+```
+
+支持 stdin：
+
+```bash
+cat article.md | npx -y bmmd render --platform wechat > article.html
+```
 
 **端点**: `POST https://bm.md/api/markdown/render`
 
@@ -33,6 +53,9 @@ bm.md 是一个专业的 Markdown 排版工具，提供以下核心能力：
 | `markdown`             | string  | 是   | -              | Markdown 源文本，支持 GFM 语法、数学公式                              |
 | `markdownStyle`        | string  | 否   | `ayu-light`    | 排版样式 ID，见下方完整列表                                           |
 | `codeTheme`            | string  | 否   | `kimbie-light` | 代码块高亮主题 ID，见下方完整列表                                     |
+| `mermaidTheme`         | string  | 否   | `""`           | Mermaid 流程图主题 ID，空字符串表示使用默认主题                       |
+| `infographicTheme`     | string  | 否   | `default`      | Infographic 信息图主题 ID                                             |
+| `infographicPalette`   | string  | 否   | `antv`         | Infographic 信息图配色 ID                                             |
 | `customCss`            | string  | 否   | `""`           | 自定义 CSS，选择器需约束在 `#bm-md` 下，如 `#bm-md h1 { color: red }` |
 | `enableFootnoteLinks`  | boolean | 否   | `true`         | 是否将链接转换为脚注形式                                              |
 | `openLinksInNewWindow` | boolean | 否   | `true`         | 是否在新窗口打开链接                                                  |
@@ -68,6 +91,18 @@ curl -X POST https://bm.md/api/markdown/render \
 
 将 HTML 源代码转换为 Markdown 格式。
 
+**CLI 示例（优先）**:
+
+```bash
+npx -y bmmd parse page.html --output article.md
+```
+
+支持 stdin：
+
+```bash
+cat page.html | npx -y bmmd parse > article.md
+```
+
 **端点**: `POST https://bm.md/api/markdown/parse`
 
 **请求参数**:
@@ -101,6 +136,12 @@ curl -X POST https://bm.md/api/markdown/parse \
 
 从 Markdown 中提取纯文本内容，移除所有格式标记，保留段落分隔。
 
+**CLI 示例（优先）**:
+
+```bash
+npx -y bmmd extract article.md --output article.txt
+```
+
 **端点**: `POST https://bm.md/api/markdown/extract`
 
 **请求参数**:
@@ -133,6 +174,16 @@ curl -X POST https://bm.md/api/markdown/extract \
 ### 4. Markdown 格式化
 
 校验并自动修复 Markdown 格式问题，统一代码风格。
+
+**CLI 示例（优先）**:
+
+```bash
+# 输出修复后的 Markdown
+npx -y bmmd lint article.md --output article.fixed.md
+
+# 直接写回源文件
+npx -y bmmd lint article.md --fix
+```
 
 **端点**: `POST https://bm.md/api/markdown/lint`
 

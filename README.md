@@ -11,7 +11,7 @@
 - 🌈 **14 种代码主题** - 支持浅色/深色多种代码高亮风格
 - 📱 **多平台适配** - 一键复制到微信公众号、~~知乎~~、~~掘金~~
 - 🖼️ **图片导出** - 将排版内容导出为图片分享
-- 🔌 **开发者友好** - 提供 REST API 和 MCP 协议集成
+- 🔌 **开发者友好** - 提供 CLI、REST API 和 MCP 协议集成
 - ⌨️ **快捷操作** - 命令面板 + 全局快捷键，高效操作
 
 ## 🚀 快速开始
@@ -29,6 +29,23 @@ pnpm dev
 ```
 
 访问 http://localhost:2663 开始使用。
+
+### CLI 使用
+
+`bmmd` 可在命令行中复用核心 Markdown 处理能力，支持文件输入或 stdin，默认输出到 stdout。
+
+```bash
+# 直接运行
+pnpm dlx bmmd render article.md --platform wechat --output article.html
+
+# 管道输入
+cat article.md | pnpm dlx bmmd extract
+
+# 修复 Markdown 并写回源文件
+pnpm dlx bmmd lint article.md --fix
+```
+
+本地开发可执行 `pnpm build:cli` 构建 CLI，入口文件为 `bin/bmmd.mjs`。
 
 ## 🛠️ 技术栈
 

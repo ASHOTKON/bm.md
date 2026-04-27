@@ -5,21 +5,25 @@ import { transform } from 'lightningcss'
 export function cssRawMinifyPlugin(): Plugin {
   return {
     name: 'css-raw-minify',
-    enforce: 'pre',
+    enforce: 'post',
     transform(code, id) {
-      if (!id.endsWith('.css?raw'))
+      const queryIndex = id.indexOf('?')
+      if (queryIndex === -1 || !id.slice(0, queryIndex).endsWith('.css'))
         return
 
-      // Vite 已将内容转换为 export default "..."，需要提取原始 CSS
-      const match = code.match(/^export default "([\s\S]*)"/m)
+      const query = new URLSearchParams(id.slice(queryIndex + 1))
+      if (!query.has('raw') && !query.has('inline'))
+        return
+
+      // Vite/tsdown 已将 CSS 转换为 export default "..."，这里做后压缩。
+      const match = code.match(/^export default\s+("[\s\S]*")\s*;?/m)
       if (!match)
         return
 
-      // 解码转义字符
-      const css = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+      const css = JSON.parse(match[1]) as string
 
       const { code: minified } = transform({
-        filename: id.replace('?raw', ''),
+        filename: id.slice(0, queryIndex),
         code: Buffer.from(css),
         minify: true,
       })

@@ -10,6 +10,7 @@ export default antfu({
     'react-refresh/only-export-components': 'off',
   },
   ignores: [
+    'bin/**',
     '**/*.gen.ts',
     'src/components/ui/**',
     'src/hooks/use-mobile.tsx',

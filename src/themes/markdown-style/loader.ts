@@ -1,45 +1,41 @@
-const cache = new Map<string, string>()
+import ayuLightCss from './ayu-light.css?inline'
+import bauhausCss from './bauhaus.css?inline'
+import blueprintCss from './blueprint.css?inline'
+import botanicalCss from './botanical.css?inline'
+import greenSimpleCss from './green-simple.css?inline'
+import maximalismCss from './maximalism.css?inline'
+import neoBrutalismCss from './neo-brutalism.css?inline'
+import newsprintCss from './newsprint.css?inline'
+import organicCss from './organic.css?inline'
+import playfulGeometricCss from './playful-geometric.css?inline'
+import professionalCss from './professional.css?inline'
+import resetCss from './reset.css?inline'
+import retroCss from './retro.css?inline'
+import sketchCss from './sketch.css?inline'
+import terminalCss from './terminal.css?inline'
 
-let resetCssPromise: Promise<string> | null = null
-
-function loadResetCss(): Promise<string> {
-  return resetCssPromise ??= import('./reset.css?raw').then(m => m.default)
+const themeCssMap: Record<string, string> = {
+  'ayu-light': ayuLightCss,
+  'bauhaus': bauhausCss,
+  'blueprint': blueprintCss,
+  'botanical': botanicalCss,
+  'green-simple': greenSimpleCss,
+  'maximalism': maximalismCss,
+  'neo-brutalism': neoBrutalismCss,
+  'newsprint': newsprintCss,
+  'organic': organicCss,
+  'playful-geometric': playfulGeometricCss,
+  'professional': professionalCss,
+  'retro': retroCss,
+  'sketch': sketchCss,
+  'terminal': terminalCss,
 }
 
-const themeModules: Record<string, () => Promise<{ default: string }>> = {
-  'ayu-light': () => import('./ayu-light.css?raw'),
-  'bauhaus': () => import('./bauhaus.css?raw'),
-  'blueprint': () => import('./blueprint.css?raw'),
-  'botanical': () => import('./botanical.css?raw'),
-  'green-simple': () => import('./green-simple.css?raw'),
-  'maximalism': () => import('./maximalism.css?raw'),
-  'neo-brutalism': () => import('./neo-brutalism.css?raw'),
-  'newsprint': () => import('./newsprint.css?raw'),
-  'organic': () => import('./organic.css?raw'),
-  'playful-geometric': () => import('./playful-geometric.css?raw'),
-  'professional': () => import('./professional.css?raw'),
-  'retro': () => import('./retro.css?raw'),
-  'sketch': () => import('./sketch.css?raw'),
-  'terminal': () => import('./terminal.css?raw'),
-}
-
-export async function loadMarkdownStyleCss(id: string): Promise<string | undefined> {
-  if (cache.has(id)) {
-    return cache.get(id)
-  }
-
-  const loader = themeModules[id]
-  if (!loader) {
+export function loadMarkdownStyleCss(id: string): string | undefined {
+  const themeCss = themeCssMap[id]
+  if (!themeCss) {
     return undefined
   }
 
-  const [resetCss, themeMod] = await Promise.all([
-    loadResetCss(),
-    loader(),
-  ])
-
-  const css = resetCss + themeMod.default
-  cache.set(id, css)
-
-  return css
+  return resetCss + themeCss
 }

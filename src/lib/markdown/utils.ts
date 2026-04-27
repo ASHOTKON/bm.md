@@ -1,11 +1,5 @@
-let katexCssCache: string | null = null
+import katexCss from 'katex/dist/katex.css?inline'
 
-export async function loadKatexCss() {
-  if (katexCssCache) {
-    return katexCssCache
-  }
-
-  const { default: katexCss } = await import('katex/dist/katex.css?raw')
-  katexCssCache = katexCss
+export function loadKatexCss(): string {
   return katexCss
 }

@@ -23,6 +23,7 @@
 
 ```
 src/
+├── cli/                 # bmmd 命令行入口
 ├── components/          # React 组件
 │   ├── command-palette/ # 命令面板
 │   ├── dialog/          # 弹窗组件
@@ -44,10 +45,12 @@ src/
 │   ├── actions/         # 用户操作（导入/导出/复制）
 │   ├── file-storage.ts  # IndexedDB 文件存储
 │   └── markdown/        # Markdown 处理管道
+│       ├── definitions.ts # 工具定义统一出口
 │       ├── extract/     # 文本提取
 │       ├── lint/        # 格式校验
 │       ├── parse/       # HTML → Markdown
-│       └── render/      # Markdown → HTML
+│       ├── render/      # Markdown → HTML
+│       └── types/       # 工具与 CLI 定义类型
 ├── routes/              # TanStack Router 路由
 ├── services/            # 业务服务层
 ├── storage/             # 云端存储抽象层
@@ -297,7 +300,7 @@ else if (process.env.HOME === '/dev/shm/home') {
 
 ---
 
-## API 设计
+## 接口与工具设计
 
 ### oRPC 架构
 
@@ -313,6 +316,30 @@ else if (process.env.HOME === '/dev/shm/home') {
 │                    (CORS, Error Handling)                   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### CLI 集成
+
+CLI 使用 `cac` 实现，入口为 `src/cli/index.ts`，构建后输出到 `bin/bmmd.mjs` 并通过 `package.json` 的 `bin.bmmd` 暴露。
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         bmmd CLI                            │
+├─────────────────┬─────────────────┬─────────────────────────┤
+│ bmmd render     │ bmmd parse      │ bmmd extract/lint       │
+├─────────────────┴─────────────────┴─────────────────────────┤
+│ src/lib/markdown/*/definition.ts 声明输入、选项与描述          │
+│ src/lib/markdown/definitions.ts 统一导出工具定义              │
+│ src/cli/index.ts 读取定义并注册命令                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+设计要点：
+
+- **声明式命令** - 每个 Markdown 工具在 `definition.ts` 中声明 Zod 输入 schema、CLI 输入字段和选项，CLI 自动生成命令与帮助信息
+- **统一校验** - CLI 执行前复用同一份 Zod schema 校验参数，错误统一以 `bmmd: ...` 输出
+- **输入输出一致** - 命令支持文件输入和 stdin；默认写 stdout，`--output <file>` 写入文件
+- **特殊写回** - `bmmd lint <file> --fix` 将修复结果写回输入文件，且不能与 `--output` 同时使用
+- **构建发布** - `pnpm build:cli` 使用 `tsdown.cli.config.ts` 生成 Node 20 ESM bundle，`prepack` 会在发布前自动构建
 
 ### MCP 集成
 
