@@ -9,6 +9,7 @@ import { ThemeColorMeta } from '@/components/theme-color-meta'
 import { Toaster } from '@/components/ui/sonner'
 import { appConfig } from '@/config'
 import { env } from '@/env'
+import { usePreviewStore } from '@/stores/preview'
 
 import appCss from '../styles.css?url'
 
@@ -73,6 +74,8 @@ function RootDocument() {
   const analyticsEnabled = analytics.scriptUrl && analytics.siteId
 
   useEffect(() => {
+    void usePreviewStore.persist.rehydrate()
+
     Promise.all([
       import('@/lib/pwa').then(({ initPWA }) => initPWA()),
       import('@/lib/file-handler').then(({ initFileHandler }) => initFileHandler()),
