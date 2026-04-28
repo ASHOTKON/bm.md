@@ -17,6 +17,7 @@ export default function MarkdownRender() {
   const enableScrollSync = useEditorStore(state => state.enableScrollSync)
   const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
   const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)
+  const hasHydrated = usePreviewStore(state => state.hasHydrated)
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
@@ -164,6 +165,10 @@ export default function MarkdownRender() {
   )
 
   useEffect(() => {
+    if (!hasHydrated) {
+      return
+    }
+
     clearRenderedHtmlCache()
     canceledRef.current = false
     scheduleRender(content, markdownStyle, codeTheme, mermaidTheme, infographic.theme, infographic.palette, customCss, enableFootnoteLinks, openLinksInNewWindow)
@@ -172,7 +177,7 @@ export default function MarkdownRender() {
       canceledRef.current = true
       scheduleRender.cancel()
     }
-  }, [content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, scheduleRender, clearRenderedHtmlCache])
+  }, [hasHydrated, content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, scheduleRender, clearRenderedHtmlCache])
 
   const isMobile = previewWidth === PREVIEW_WIDTH_MOBILE
 

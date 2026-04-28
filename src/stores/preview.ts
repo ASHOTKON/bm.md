@@ -15,6 +15,9 @@ export interface InfographicSettings {
 }
 
 interface PreviewState {
+  hasHydrated: boolean
+  setHasHydrated: (value: boolean) => void
+
   previewWidth: PreviewWidth
   setPreviewWidth: (width: PreviewWidth) => void
 
@@ -45,6 +48,9 @@ interface PreviewState {
 export const usePreviewStore = create<PreviewState>()(
   persist(
     (set, get) => ({
+      hasHydrated: false,
+      setHasHydrated: hasHydrated => set({ hasHydrated }),
+
       previewWidth: PREVIEW_WIDTH_MOBILE,
       setPreviewWidth: previewWidth => set({ previewWidth }),
 
@@ -87,6 +93,13 @@ export const usePreviewStore = create<PreviewState>()(
         infographic: state.infographic,
         customCss: state.customCss,
       }),
+      onRehydrateStorage: state => (rehydratedState, error) => {
+        if (error) {
+          console.error('Zustand preview rehydration error:', error)
+        }
+        const nextState = rehydratedState ?? state
+        nextState.setHasHydrated(true)
+      },
     },
   ),
 )

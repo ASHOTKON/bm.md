@@ -9,6 +9,7 @@ export const markdownStyles: MarkdownStyle[] = [
   { id: 'blueprint', name: 'Blueprint' },
   { id: 'botanical', name: 'Botanical' },
   { id: 'green-simple', name: 'GreenSimple' },
+  { id: 'kami', name: 'Kami' },
   { id: 'maximalism', name: 'Maximalism' },
   { id: 'neo-brutalism', name: 'Neo-Brutalism' },
   { id: 'newsprint', name: 'Newsprint' },

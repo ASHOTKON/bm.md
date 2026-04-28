@@ -77,6 +77,10 @@ pnpm dlx bmmd lint article.md --fix
 - [UI 设计](https://github.com/miantiao-me/bm.md/blob/master/docs/design.md) - 界面设计说明
 - [API 文档](https://bm.md/docs) - REST API 参考
 
+## 🙏 致谢
+
+- [Kami](https://github.com/tw93/Kami) — 「Kami」排版风格的灵感来源（暖羊皮纸 + 墨蓝克制的编辑级排版）。
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request。

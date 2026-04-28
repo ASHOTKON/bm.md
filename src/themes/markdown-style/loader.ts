@@ -3,6 +3,7 @@ import bauhausCss from './bauhaus.css?inline'
 import blueprintCss from './blueprint.css?inline'
 import botanicalCss from './botanical.css?inline'
 import greenSimpleCss from './green-simple.css?inline'
+import kamiCss from './kami.css?inline'
 import maximalismCss from './maximalism.css?inline'
 import neoBrutalismCss from './neo-brutalism.css?inline'
 import newsprintCss from './newsprint.css?inline'
@@ -20,6 +21,7 @@ const themeCssMap: Record<string, string> = {
   'blueprint': blueprintCss,
   'botanical': botanicalCss,
   'green-simple': greenSimpleCss,
+  'kami': kamiCss,
   'maximalism': maximalismCss,
   'neo-brutalism': neoBrutalismCss,
   'newsprint': newsprintCss,
