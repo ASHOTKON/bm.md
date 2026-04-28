@@ -52,7 +52,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^7.2.0",
     "@antv/infographic": "^0.2.13",
-    "@base-ui/react": "^1.1.0",
+    "@base-ui/react": "^1.2.0",
     "@catppuccin/highlightjs": "^1.0.1",
     "@codemirror/commands": "^6.10.1",
     "@codemirror/lang-markdown": "^6.5.0",
