@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import process from 'node:process'
+import { env } from 'node:process'
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
@@ -9,14 +9,13 @@ import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 // import { analyzer } from 'vite-bundle-analyzer'
 import { VitePWA } from 'vite-plugin-pwa'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
 import { name } from './package.json'
 import { cssRawMinifyPlugin, fixNitroInlineDynamicImports, htmlRawMinifyPlugin, markdownPlugin } from './scripts/vite'
 import { appConfig } from './src/config/app'
 
 const require = createRequire(import.meta.url)
-const isAliyunESA = Boolean(process.env.AliUid)
-const isTencentEdgeOne = process.env.HOME === '/dev/shm/home' && process.env.TMPDIR === '/dev/shm/tmp'
+const isAliyunESA = Boolean(env.AliUid)
+const isTencentEdgeOne = env.HOME === '/dev/shm/home' && env.TMPDIR === '/dev/shm/tmp'
 
 let customPreset: string | undefined
 if (isAliyunESA) {
@@ -39,7 +38,7 @@ const config = defineConfig({
     markdownPlugin(),
     devtools(),
     ...(
-      process.env.NODE_ENV !== 'test'
+      env.NODE_ENV !== 'test'
         ? [nitro({
             preset: customPreset,
             cloudflare: {
@@ -56,10 +55,6 @@ const config = defineConfig({
             },
           })]
         : []),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
     tailwindcss(),
     tanstackStart({
       prerender: {
@@ -116,6 +111,7 @@ const config = defineConfig({
     }),
   ],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       'decode-named-character-reference': require.resolve('decode-named-character-reference'),
       'hast-util-from-html-isomorphic': require.resolve('hast-util-from-html-isomorphic'),
@@ -123,11 +119,6 @@ const config = defineConfig({
   },
   worker: {
     format: 'es',
-    plugins: () => [
-      viteTsConfigPaths({
-        projects: ['./tsconfig.json'],
-      }),
-    ],
   },
 })
 
