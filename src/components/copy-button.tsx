@@ -18,7 +18,7 @@ export function CopyButton({ text, className }: CopyButtonProps) {
     if (success) {
       setCopied(true)
       toast.success('复制成功')
-      setTimeout(() => setCopied(false), 2000)
+      setTimeout(setCopied, 2000, false)
     }
     else {
       toast.error('复制失败')

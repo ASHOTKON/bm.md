@@ -1,8 +1,8 @@
 export function EditorFallback() {
   return (
     <div className={`
-      flex h-full w-full flex-col items-center justify-center bg-background/50
-      p-4 backdrop-blur-sm select-none
+      flex size-full flex-col items-center justify-center bg-background/50 p-4
+      backdrop-blur-sm select-none
     `}
     >
       <div className={`
@@ -10,18 +10,10 @@ export function EditorFallback() {
         md:text-9xl
       `}
       >
-        <span className={`
-          animate-wave-bounce
-          [animation-delay:0s]
-        `}
-        >
+        <span className="animate-wave-bounce [animation-delay:0s]">
           b
         </span>
-        <span className={`
-          animate-wave-bounce
-          [animation-delay:0.1s]
-        `}
-        >
+        <span className="animate-wave-bounce [animation-delay:0.1s]">
           m
         </span>
       </div>

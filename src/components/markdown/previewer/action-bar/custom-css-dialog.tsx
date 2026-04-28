@@ -103,7 +103,7 @@ export function CustomCssDialog() {
           <DialogDescription>
             CSS 选择器需约束在
             {' '}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">#bm-md</code>
+            <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-xs">#bm-md</code>
             {' '}
             下，在主题样式之后应用。
           </DialogDescription>
@@ -152,7 +152,7 @@ export function CustomCssDialog() {
             />
             <CollapsibleContent>
               <pre className={`
-                mt-2 max-h-48 overflow-auto rounded bg-muted p-3 font-mono
+                mt-2 max-h-48 overflow-auto rounded-sm bg-muted p-3 font-mono
                 text-xs
               `}
               >

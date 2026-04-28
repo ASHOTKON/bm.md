@@ -7,7 +7,7 @@ const CodeMirrorEditor = lazy(() => import('./editor'))
 
 export default function MarkdownEditor() {
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-editor">
+    <div className="flex size-full flex-col overflow-hidden bg-editor">
       <FileTabs />
       <div className="flex flex-1 items-center justify-center overflow-hidden">
         <ClientOnly fallback={<EditorFallback />}>

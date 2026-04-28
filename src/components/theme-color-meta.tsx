@@ -6,7 +6,7 @@ const THEME_ANIMATION_HALF = 250
 
 export function ThemeColorMeta() {
   const { resolvedTheme } = useTheme()
-  const isFirstRender = useRef(true)
+  const isFirstRenderRef = useRef(true)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export function ThemeColorMeta() {
       clearTimeout(timerRef.current)
     }
 
-    if (isFirstRender.current) {
-      isFirstRender.current = false
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false
       updateThemeColor()
     }
     else {

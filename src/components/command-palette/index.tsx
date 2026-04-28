@@ -149,7 +149,7 @@ export function CommandPalette() {
 
   const handleOpenResetDialog = useCallback(() => {
     closePanel()
-    setTimeout(() => setResetDialogOpen(true), 150)
+    setTimeout(setResetDialogOpen, 150, true)
   }, [closePanel])
 
   const handleCopyPlatform = useCallback((platform: SupportedPlatform) => async () => {

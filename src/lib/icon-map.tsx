@@ -9,7 +9,6 @@ import {
   FileDown,
   FileText,
   FileUp,
-  Github,
   ImageDown,
   Link,
   Monitor,
@@ -19,12 +18,13 @@ import {
   RefreshCw,
   Smartphone,
   Sun,
-  Twitter,
   Wand,
 } from 'lucide-react'
+import GithubIcon from '@/icons/github'
 import JuejinIcon from '@/icons/juejin'
 import MCPIcon from '@/icons/mcp'
 import SkillIcon from '@/icons/skill'
+import TwitterIcon from '@/icons/twitter'
 import WechatIcon from '@/icons/wechat'
 import ZhihuIcon from '@/icons/zhihu'
 
@@ -38,7 +38,7 @@ const iconMap = {
   FileDown,
   FileText,
   FileUp,
-  Github,
+  Github: GithubIcon,
   ImageDown,
   Link,
   Monitor,
@@ -48,7 +48,7 @@ const iconMap = {
   RefreshCw,
   Smartphone,
   Sun,
-  Twitter,
+  Twitter: TwitterIcon,
   Wand,
   Wechat: WechatIcon,
   Zhihu: ZhihuIcon,

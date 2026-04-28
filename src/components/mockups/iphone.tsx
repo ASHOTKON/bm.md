@@ -123,7 +123,7 @@ export function Phone({
 
     const availableHeight = parent.clientHeight - 20
     const clampedHeight = Math.min(Math.max(availableHeight, MIN_PHONE_HEIGHT), MAX_PHONE_HEIGHT)
-    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- ResizeObserver 回调中设置状态是合理的模式
+    // eslint-disable-next-line react/set-state-in-effect -- ResizeObserver 回调中设置状态是合理的模式
     setPhoneHeight(clampedHeight)
   }, [])
 

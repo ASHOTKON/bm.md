@@ -39,7 +39,7 @@ export default function MarkdownPreviewer() {
   }, [setPreviewWidth, userPreferredWidth, previewWidth])
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-editor">
+    <div className="flex size-full overflow-hidden bg-editor">
       <div
         ref={containerRef}
         className="flex flex-1 items-center justify-center p-4"

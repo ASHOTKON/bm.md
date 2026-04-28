@@ -8,6 +8,7 @@ export default antfu({
   rules: {
     'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
     'react-refresh/only-export-components': 'off',
+    'markdown/no-multiple-h1': 'off',
   },
   ignores: [
     'bin/**',
@@ -26,6 +27,6 @@ export default antfu({
   },
   rules: {
     ...eslintPluginBetterTailwindcss.configs['recommended-warn'].rules,
-    'better-tailwindcss/no-unregistered-classes': 'off',
+    'better-tailwindcss/no-unknown-classes': 'off',
   },
 })

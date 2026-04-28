@@ -14,7 +14,7 @@ export function FileTabs() {
   const deleteFile = useFilesStore(state => state.deleteFile)
   const renameFile = useFilesStore(state => state.renameFile)
 
-  const tabRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const tabsRef = useRef<Map<string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
     if (hasHydrated) {
@@ -26,7 +26,7 @@ export function FileTabs() {
     if (isInitialized && activeFileId) {
       // 延迟一帧确保 DOM 已渲染且 ref 已注册
       requestAnimationFrame(() => {
-        const tabElement = tabRefs.current.get(activeFileId)
+        const tabElement = tabsRef.current.get(activeFileId)
         if (tabElement) {
           tabElement.scrollIntoView({
             behavior: 'smooth',
@@ -45,10 +45,10 @@ export function FileTabs() {
 
   const setTabRef = (id: string) => (el: HTMLDivElement | null) => {
     if (el) {
-      tabRefs.current.set(id, el)
+      tabsRef.current.set(id, el)
     }
     else {
-      tabRefs.current.delete(id)
+      tabsRef.current.delete(id)
     }
   }
 
@@ -61,7 +61,7 @@ export function FileTabs() {
       const nextFile = files[nextIndex]
       switchFile(nextFile.id)
       requestAnimationFrame(() => {
-        tabRefs.current.get(nextFile.id)?.focus()
+        tabsRef.current.get(nextFile.id)?.focus()
       })
     }
     else if (e.key === 'Enter' || e.key === ' ') {
@@ -74,7 +74,7 @@ export function FileTabs() {
       const firstFile = files[0]
       switchFile(firstFile.id)
       requestAnimationFrame(() => {
-        tabRefs.current.get(firstFile.id)?.focus()
+        tabsRef.current.get(firstFile.id)?.focus()
       })
     }
     else if (e.key === 'End') {
@@ -82,7 +82,7 @@ export function FileTabs() {
       const lastFile = files[files.length - 1]
       switchFile(lastFile.id)
       requestAnimationFrame(() => {
-        tabRefs.current.get(lastFile.id)?.focus()
+        tabsRef.current.get(lastFile.id)?.focus()
       })
     }
   }

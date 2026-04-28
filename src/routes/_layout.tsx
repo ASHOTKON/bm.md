@@ -23,15 +23,17 @@ function App() {
 
   return (
     <div className="flex h-dvh min-h-[700px] min-w-5xl flex-col overflow-hidden">
-      <ResizablePanelGroup tagName="main" className="flex-1" direction="horizontal">
-        <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
-          <MarkdownEditor></MarkdownEditor>
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
-          <MarkdownPreviewer></MarkdownPreviewer>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <main className="flex-1">
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
+            <MarkdownEditor></MarkdownEditor>
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
+            <MarkdownPreviewer></MarkdownPreviewer>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </main>
       <FooterBar></FooterBar>
       <ClientOnly>
         <CommandPalette />

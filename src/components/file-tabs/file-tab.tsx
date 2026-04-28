@@ -114,7 +114,8 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
             `
             : `
               opacity-0
-              group-hover:opacity-60 group-hover:hover:opacity-100
+              group-hover:opacity-60
+              group-hover:hover:opacity-100
             `,
         )}
         onClick={(e) => {

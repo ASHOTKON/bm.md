@@ -27,7 +27,7 @@ export function initFileHandler() {
     for (const fileHandle of launchParams.files) {
       try {
         const file = await fileHandle.getFile()
-        if (!file.name.match(/\.(md|markdown|mdown|mkd)$/i))
+        if (!/\.(?:md|markdown|mdown|mkd)$/i.test(file.name))
           continue
 
         const content = await file.text()

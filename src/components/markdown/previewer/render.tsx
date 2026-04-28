@@ -186,7 +186,7 @@ export default function MarkdownRender() {
       ref={iframeRef}
       id="bm-preview-iframe"
       title="markdown preview"
-      className="h-full w-full border-0"
+      className="size-full border-0"
       sandbox="allow-same-origin allow-modals"
       srcDoc={iframeShell}
       onLoad={onIframeLoad}
@@ -203,7 +203,7 @@ export default function MarkdownRender() {
 
   return (
     <Safari
-      className="h-full w-full"
+      className="size-full"
       style={{ maxWidth: previewWidth }}
       url="bm.md"
       mode="simple"
