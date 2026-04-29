@@ -14,7 +14,7 @@ export default antfu({
     'bin/**',
     '**/*.gen.ts',
     'src/components/ui/**',
-    'src/hooks/use-mobile.tsx',
+    'src/hooks/use-mobile.ts',
   ],
 }, {
   plugins: {

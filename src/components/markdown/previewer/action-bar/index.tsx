@@ -1,5 +1,4 @@
 import { Separator } from '@/components/ui/separator'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { CodeThemeMenu } from './code-theme-menu'
 import { CopyButton } from './copy-button'
 import { CustomCssDialog } from './custom-css-dialog'
@@ -10,7 +9,7 @@ import { MermaidThemeMenu } from './mermaid-theme-menu'
 
 export function PreviewerActionBar() {
   return (
-    <TooltipProvider>
+    <>
       <CopyButton platform="wechat" />
       <CopyButton platform="zhihu" />
       <CopyButton platform="juejin" />
@@ -22,6 +21,6 @@ export function PreviewerActionBar() {
       <MermaidThemeMenu />
       <InfographicSettingsMenu />
       <CustomCssDialog />
-    </TooltipProvider>
+    </>
   )
 }

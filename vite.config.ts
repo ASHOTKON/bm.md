@@ -16,6 +16,17 @@ import { appConfig } from './src/config/app'
 const require = createRequire(import.meta.url)
 const isAliyunESA = Boolean(env.AliUid)
 const isTencentEdgeOne = env.HOME === '/dev/shm/home' && env.TMPDIR === '/dev/shm/tmp'
+const codemirrorPackages = [
+  '@codemirror/autocomplete',
+  '@codemirror/commands',
+  '@codemirror/lang-markdown',
+  '@codemirror/language',
+  '@codemirror/language-data',
+  '@codemirror/lint',
+  '@codemirror/search',
+  '@codemirror/state',
+  '@codemirror/view',
+]
 
 let customPreset: string | undefined
 if (isAliyunESA) {
@@ -112,10 +123,15 @@ const config = defineConfig({
   ],
   resolve: {
     tsconfigPaths: true,
+    // CodeMirror 扩展依赖 instanceof 检查，必须解析到同一份 state/view 模块。
+    dedupe: codemirrorPackages,
     alias: {
       'decode-named-character-reference': require.resolve('decode-named-character-reference'),
       'hast-util-from-html-isomorphic': require.resolve('hast-util-from-html-isomorphic'),
     },
+  },
+  optimizeDeps: {
+    include: codemirrorPackages,
   },
   worker: {
     format: 'es',

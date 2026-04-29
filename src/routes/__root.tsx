@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { NotFound } from '@/components/not-found'
 import { ThemeColorMeta } from '@/components/theme-color-meta'
 import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { appConfig } from '@/config'
 import { env } from '@/env'
 import { usePreviewStore } from '@/stores/preview'
@@ -93,8 +94,10 @@ function RootDocument() {
           defaultTheme="dark"
           enableColorScheme
         >
-          <Outlet />
-          <ThemeColorMeta />
+          <TooltipProvider>
+            <Outlet />
+            <ThemeColorMeta />
+          </TooltipProvider>
         </ThemeProvider>
         <TanStackDevtools
           config={{

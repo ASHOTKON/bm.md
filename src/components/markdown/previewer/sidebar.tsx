@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator'
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { editorCommandConfig, navigationConfig, viewModeConfig } from '@/config'
@@ -34,126 +33,124 @@ export default function MarkdownPreviewerSidebar() {
   }
 
   return (
-    <TooltipProvider>
-      <div className="flex w-11 flex-col items-center border-l py-2">
-        <Tooltip>
-          <TooltipTrigger
-            render={(
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="切换主题"
-                onClick={handleThemeToggle}
-              >
-                <ClientOnly fallback={<Sun className="size-4" />}>
-                  {isDark
-                    ? <Sun className="size-4" />
-                    : (
-                        <Moon className="size-4" />
-                      )}
-                </ClientOnly>
-              </Button>
-            )}
-          />
-          <TooltipContent side="left">
-            {isDark ? editorCommandConfig.themeToggle.labelDark : editorCommandConfig.themeToggle.labelLight}
-          </TooltipContent>
-        </Tooltip>
+    <div className="flex w-11 flex-col items-center border-l py-2">
+      <Tooltip>
+        <TooltipTrigger
+          render={(
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="切换主题"
+              onClick={handleThemeToggle}
+            >
+              <ClientOnly fallback={<Sun className="size-4" />}>
+                {isDark
+                  ? <Sun className="size-4" />
+                  : (
+                      <Moon className="size-4" />
+                    )}
+              </ClientOnly>
+            </Button>
+          )}
+        />
+        <TooltipContent side="left">
+          {isDark ? editorCommandConfig.themeToggle.labelDark : editorCommandConfig.themeToggle.labelLight}
+        </TooltipContent>
+      </Tooltip>
 
-        <Separator orientation="horizontal" className="my-1 px-1" />
+      <Separator orientation="horizontal" className="my-1 px-1" />
 
-        <Tooltip>
-          <TooltipTrigger
-            render={(
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={viewModeConfig.mobile.label}
-                onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_MOBILE)}
-              >
-                <Smartphone className={isMobileView
-                  ? 'size-4 text-primary'
-                  : `size-4`}
-                />
-              </Button>
-            )}
-          />
-          <TooltipContent side="left">
-            {viewModeConfig.mobile.label}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger
-            render={(
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={viewModeConfig.desktop.label}
-                onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_DESKTOP)}
-              >
-                <Monitor className={isDesktopView
-                  ? 'size-4 text-primary'
-                  : `size-4`}
-                />
-              </Button>
-            )}
-          />
-          <TooltipContent side="left">
-            {viewModeConfig.desktop.label}
-          </TooltipContent>
-        </Tooltip>
-
-        <div className="flex-1" />
-
-        {navigationConfig.internal.map((item) => {
-          const Icon = getIcon(item.icon)
-          return (
-            <Tooltip key={item.path}>
-              <TooltipTrigger
-                render={(
-                  <Link
-                    to={item.path}
-                    aria-label={item.label}
-                    className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-                  >
-                    <Icon className="size-4" />
-                  </Link>
-                )}
+      <Tooltip>
+        <TooltipTrigger
+          render={(
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={viewModeConfig.mobile.label}
+              onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_MOBILE)}
+            >
+              <Smartphone className={isMobileView
+                ? 'size-4 text-primary'
+                : `size-4`}
               />
-              <TooltipContent side="left">
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
+            </Button>
+          )}
+        />
+        <TooltipContent side="left">
+          {viewModeConfig.mobile.label}
+        </TooltipContent>
+      </Tooltip>
 
-        <Separator orientation="horizontal" className="my-1 px-1" />
-
-        {navigationConfig.external.map((item) => {
-          const Icon = getIcon(item.icon)
-          return (
-            <Tooltip key={item.url}>
-              <TooltipTrigger
-                render={(
-                  <a
-                    href={item.url}
-                    aria-label={item.label}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-                  >
-                    <Icon className="size-4" />
-                  </a>
-                )}
+      <Tooltip>
+        <TooltipTrigger
+          render={(
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={viewModeConfig.desktop.label}
+              onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_DESKTOP)}
+            >
+              <Monitor className={isDesktopView
+                ? 'size-4 text-primary'
+                : `size-4`}
               />
-              <TooltipContent side="left">
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
-      </div>
-    </TooltipProvider>
+            </Button>
+          )}
+        />
+        <TooltipContent side="left">
+          {viewModeConfig.desktop.label}
+        </TooltipContent>
+      </Tooltip>
+
+      <div className="flex-1" />
+
+      {navigationConfig.internal.map((item) => {
+        const Icon = getIcon(item.icon)
+        return (
+          <Tooltip key={item.path}>
+            <TooltipTrigger
+              render={(
+                <Link
+                  to={item.path}
+                  aria-label={item.label}
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+                >
+                  <Icon className="size-4" />
+                </Link>
+              )}
+            />
+            <TooltipContent side="left">
+              {item.label}
+            </TooltipContent>
+          </Tooltip>
+        )
+      })}
+
+      <Separator orientation="horizontal" className="my-1 px-1" />
+
+      {navigationConfig.external.map((item) => {
+        const Icon = getIcon(item.icon)
+        return (
+          <Tooltip key={item.url}>
+            <TooltipTrigger
+              render={(
+                <a
+                  href={item.url}
+                  aria-label={item.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+                >
+                  <Icon className="size-4" />
+                </a>
+              )}
+            />
+            <TooltipContent side="left">
+              {item.label}
+            </TooltipContent>
+          </Tooltip>
+        )
+      })}
+    </div>
   )
 }
