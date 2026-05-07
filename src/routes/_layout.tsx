@@ -23,13 +23,13 @@ function App() {
 
   return (
     <div className="flex h-dvh min-h-[700px] min-w-5xl flex-col overflow-hidden">
-      <main className="flex-1">
+      <main className="min-h-0 flex-1 overflow-hidden">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
+          <ResizablePanel defaultSize="50%" minSize="512px">
             <MarkdownEditor></MarkdownEditor>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50} style={{ minWidth: 512 }}>
+          <ResizablePanel defaultSize="50%" minSize="512px">
             <MarkdownPreviewer></MarkdownPreviewer>
           </ResizablePanel>
         </ResizablePanelGroup>
