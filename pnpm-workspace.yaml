@@ -1,9 +1,12 @@
+allowBuilds:
+  core-js: true
+  esbuild: true
+  msw: true
+  simple-git-hooks: true
+
 catalogMode: manual
 
-onlyBuiltDependencies:
-  - core-js
-  - esbuild
-  - msw
-  - simple-git-hooks
+minimumReleaseAgeExclude:
+  - lint-staged@17.0.8
 
 shellEmulator: true
