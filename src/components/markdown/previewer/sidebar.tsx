@@ -1,5 +1,5 @@
 import { ClientOnly, Link } from '@tanstack/react-router'
-import { Monitor, Moon, Smartphone, Sun } from 'lucide-react'
+import { LampDesk, Monitor, Moon, Smartphone, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -30,16 +30,26 @@ const externalNavigationItems = navigationConfig.external.map(item => ({
 
 export default function MarkdownPreviewerSidebar() {
   const previewWidth = usePreviewStore(state => state.previewWidth)
+  const previewColorScheme = usePreviewStore(state => state.previewColorScheme)
   const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
+  const togglePreviewColorScheme = usePreviewStore(state => state.togglePreviewColorScheme)
   const { theme, setTheme } = useTheme()
 
   const isDark = theme === 'dark'
+  const isPreviewDark = previewColorScheme === 'dark'
   const isMobileView = previewWidth === PREVIEW_WIDTH_MOBILE
   const isDesktopView = previewWidth === PREVIEW_WIDTH_DESKTOP
 
   const handleThemeToggle = () => {
     trackEvent('theme', 'toggle', 'button')
     toggleTheme(isDark, setTheme)
+  }
+
+  const handlePreviewThemeToggle = () => {
+    trackEvent('preview', 'toggle-theme', 'button', {
+      to: isPreviewDark ? 'light' : 'dark',
+    })
+    togglePreviewColorScheme()
   }
 
   return (
@@ -109,6 +119,27 @@ export default function MarkdownPreviewerSidebar() {
         />
         <TooltipContent side="left">
           {viewModeConfig.desktop.label}
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger
+          render={(
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={isPreviewDark ? '预览区切换到浅色模式' : '预览区切换到深色模式'}
+              onClick={handlePreviewThemeToggle}
+            >
+              <LampDesk className={isPreviewDark
+                ? 'size-4'
+                : 'size-4 text-primary'}
+              />
+            </Button>
+          )}
+        />
+        <TooltipContent side="left">
+          {isPreviewDark ? '预览区切换到浅色模式' : '预览区切换到深色模式'}
         </TooltipContent>
       </Tooltip>
 

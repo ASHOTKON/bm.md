@@ -1,6 +1,5 @@
 import { debounce } from 'es-toolkit'
 import morphdom from 'morphdom'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { usePreviewScrollSync } from '@/components/markdown/hooks/use-scroll-sync'
 import { Phone } from '@/components/mockups/iphone'
@@ -26,11 +25,10 @@ export default function MarkdownRender() {
   const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
   const infographic = usePreviewStore(state => state.infographic)
   const customCss = usePreviewStore(state => state.customCss)
+  const previewColorScheme = usePreviewStore(state => state.previewColorScheme)
   const renderedHtml = usePreviewStore(state => state.getRenderedHtml('html'))
   const setRenderedHtml = usePreviewStore(state => state.setRenderedHtml)
   const clearRenderedHtmlCache = usePreviewStore(state => state.clearRenderedHtmlCache)
-  const { resolvedTheme } = useTheme()
-  const previewColorScheme = resolvedTheme === 'dark' ? 'dark' : 'light'
 
   const { iframeRef, onIframeLoad: onScrollSyncLoad } = usePreviewScrollSync({
     enabled: enableScrollSync,

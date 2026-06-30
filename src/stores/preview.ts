@@ -8,6 +8,7 @@ export const PREVIEW_WIDTH_MOBILE = 415
 export const PREVIEW_WIDTH_DESKTOP = 768
 
 type PreviewWidth = typeof PREVIEW_WIDTH_MOBILE | typeof PREVIEW_WIDTH_DESKTOP
+export type PreviewColorScheme = 'light' | 'dark'
 
 export interface InfographicSettings {
   theme: InfographicThemeId
@@ -23,6 +24,9 @@ interface PreviewState {
 
   userPreferredWidth: PreviewWidth
   setUserPreferredWidth: (width: PreviewWidth) => void
+
+  previewColorScheme: PreviewColorScheme
+  togglePreviewColorScheme: () => void
 
   markdownStyle: string
   setMarkdownStyle: (id: string) => void
@@ -57,6 +61,11 @@ export const usePreviewStore = create<PreviewState>()(
       userPreferredWidth: PREVIEW_WIDTH_MOBILE,
       setUserPreferredWidth: userPreferredWidth => set({ previewWidth: userPreferredWidth, userPreferredWidth }),
 
+      previewColorScheme: 'light',
+      togglePreviewColorScheme: () => set(state => ({
+        previewColorScheme: state.previewColorScheme === 'dark' ? 'light' : 'dark',
+      })),
+
       markdownStyle: 'ayu-light',
       setMarkdownStyle: markdownStyle => set({ markdownStyle, renderedHtmlMap: {} }),
 
@@ -87,6 +96,7 @@ export const usePreviewStore = create<PreviewState>()(
       skipHydration: true,
       partialize: state => ({
         userPreferredWidth: state.userPreferredWidth,
+        previewColorScheme: state.previewColorScheme,
         markdownStyle: state.markdownStyle,
         codeTheme: state.codeTheme,
         mermaidTheme: state.mermaidTheme,
