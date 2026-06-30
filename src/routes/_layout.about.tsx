@@ -34,7 +34,7 @@ function AboutModal() {
             `,
             'max-w-none',
           )}
-          // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+          // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
           dangerouslySetInnerHTML={{ __html: html }}
         />
       )}

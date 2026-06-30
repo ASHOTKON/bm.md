@@ -76,6 +76,43 @@ function HotkeyShortcut({ hotkey }: { hotkey: { key: string, shift: boolean } })
   )
 }
 
+const ImportCommandIcon = getIcon(editorCommandConfig.import.icon)
+const ExportCommandIcon = getIcon(editorCommandConfig.export.icon)
+const FormatCommandIcon = getIcon(editorCommandConfig.format.icon)
+const ExportImageCommandIcon = getIcon(editorCommandConfig.exportImage.icon)
+const CopyImageCommandIcon = getIcon(editorCommandConfig.copyImage.icon)
+const ExportPdfCommandIcon = getIcon(editorCommandConfig.exportPdf.icon)
+const PrintPreviewCommandIcon = getIcon(editorCommandConfig.printPreview.icon)
+const ThemeLightCommandIcon = getIcon(editorCommandConfig.themeToggle.iconLight)
+const ThemeDarkCommandIcon = getIcon(editorCommandConfig.themeToggle.iconDark)
+const MobileViewIcon = getIcon(viewModeConfig.mobile.icon)
+const DesktopViewIcon = getIcon(viewModeConfig.desktop.icon)
+
+const editorSettingsItems = editorSettingsConfig.map(item => ({
+  ...item,
+  Icon: getIcon(item.icon),
+}))
+
+const platformItems = supportedPlatforms.map((platform) => {
+  const config = platformConfig[platform]
+
+  return {
+    platform,
+    config,
+    Icon: getIcon(config.icon),
+  }
+})
+
+const internalNavigationItems = navigationConfig.internal.map(item => ({
+  ...item,
+  Icon: getIcon(item.icon),
+}))
+
+const externalNavigationItems = navigationConfig.external.map(item => ({
+  ...item,
+  Icon: getIcon(item.icon),
+}))
+
 export function CommandPalette() {
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
@@ -264,17 +301,6 @@ export function CommandPalette() {
   useHotkeys(hotkeyHandlers)
 
   const renderMainMenu = () => {
-    const ImportIcon = getIcon(editorCommandConfig.import.icon)
-    const ExportIcon = getIcon(editorCommandConfig.export.icon)
-    const FormatIcon = getIcon(editorCommandConfig.format.icon)
-    const ExportImageIcon = getIcon(editorCommandConfig.exportImage.icon)
-    const CopyImageIcon = getIcon(editorCommandConfig.copyImage.icon)
-    const ExportPdfIcon = getIcon(editorCommandConfig.exportPdf.icon)
-    const PrintPreviewIcon = getIcon(editorCommandConfig.printPreview.icon)
-    const ThemeIcon = getIcon(isDark ? editorCommandConfig.themeToggle.iconDark : editorCommandConfig.themeToggle.iconLight)
-    const MobileIcon = getIcon(viewModeConfig.mobile.icon)
-    const DesktopIcon = getIcon(viewModeConfig.desktop.icon)
-
     return (
       <>
         <CommandGroup heading="编辑器">
@@ -283,17 +309,17 @@ export function CommandPalette() {
             新建文件
           </CommandItem>
           <CommandItem onSelect={handleImport}>
-            {ImportIcon && <ImportIcon className="size-4" />}
+            <ImportCommandIcon className="size-4" />
             {editorCommandConfig.import.label}
             <HotkeyShortcut hotkey={editorCommandConfig.import.hotkey} />
           </CommandItem>
           <CommandItem onSelect={handleExport}>
-            {ExportIcon && <ExportIcon className="size-4" />}
+            <ExportCommandIcon className="size-4" />
             {editorCommandConfig.export.label}
             <HotkeyShortcut hotkey={editorCommandConfig.export.hotkey} />
           </CommandItem>
           <CommandItem onSelect={handleFormat}>
-            {FormatIcon && <FormatIcon className="size-4" />}
+            <FormatCommandIcon className="size-4" />
             {editorCommandConfig.format.label}
             <HotkeyShortcut hotkey={editorCommandConfig.format.hotkey} />
           </CommandItem>
@@ -306,8 +332,7 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="编辑器设置">
-          {editorSettingsConfig.map((item) => {
-            const Icon = getIcon(item.icon)
+          {editorSettingsItems.map((item) => {
             const isChecked = editorStore[item.storeKey]
             return (
               <CommandItem
@@ -315,7 +340,7 @@ export function CommandPalette() {
                 onSelect={() => handleToggleSetting(item.storeKey, item.setterKey)}
                 data-checked={isChecked}
               >
-                <Icon className="size-4" />
+                <item.Icon className="size-4" />
                 {item.label}
               </CommandItem>
             )
@@ -325,31 +350,27 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="复制导出">
-          {supportedPlatforms.map((platform) => {
-            const config = platformConfig[platform]
-            const Icon = getIcon(config.icon)
-            return (
-              <CommandItem key={platform} onSelect={handleCopyPlatform(platform)}>
-                {Icon && <Icon className="size-4" />}
-                {config.label}
-                <HotkeyShortcut hotkey={config.hotkey} />
-              </CommandItem>
-            )
-          })}
+          {platformItems.map(item => (
+            <CommandItem key={item.platform} onSelect={handleCopyPlatform(item.platform)}>
+              <item.Icon className="size-4" />
+              {item.config.label}
+              <HotkeyShortcut hotkey={item.config.hotkey} />
+            </CommandItem>
+          ))}
           <CommandItem onSelect={handleCopyImage}>
-            {CopyImageIcon && <CopyImageIcon className="size-4" />}
+            <CopyImageCommandIcon className="size-4" />
             {editorCommandConfig.copyImage.label}
           </CommandItem>
           <CommandItem onSelect={handleExportImage}>
-            {ExportImageIcon && <ExportImageIcon className="size-4" />}
+            <ExportImageCommandIcon className="size-4" />
             {editorCommandConfig.exportImage.label}
           </CommandItem>
           <CommandItem onSelect={handleExportPdf}>
-            {ExportPdfIcon && <ExportPdfIcon className="size-4" />}
+            <ExportPdfCommandIcon className="size-4" />
             {editorCommandConfig.exportPdf.label}
           </CommandItem>
           <CommandItem onSelect={handlePrintPreview}>
-            {PrintPreviewIcon && <PrintPreviewIcon className="size-4" />}
+            <PrintPreviewCommandIcon className="size-4" />
             {editorCommandConfig.printPreview.label}
           </CommandItem>
         </CommandGroup>
@@ -358,15 +379,17 @@ export function CommandPalette() {
 
         <CommandGroup heading="外观设置">
           <CommandItem onSelect={handleThemeToggle}>
-            {ThemeIcon && <ThemeIcon className="size-4" />}
+            {isDark
+              ? <ThemeDarkCommandIcon className="size-4" />
+              : <ThemeLightCommandIcon className="size-4" />}
             {isDark ? editorCommandConfig.themeToggle.labelDark : editorCommandConfig.themeToggle.labelLight}
           </CommandItem>
           <CommandItem onSelect={handleMobileView} data-checked={isMobileView}>
-            {MobileIcon && <MobileIcon className="size-4" />}
+            <MobileViewIcon className="size-4" />
             {viewModeConfig.mobile.label}
           </CommandItem>
           <CommandItem onSelect={handleDesktopView} data-checked={isDesktopView}>
-            {DesktopIcon && <DesktopIcon className="size-4" />}
+            <DesktopViewIcon className="size-4" />
             {viewModeConfig.desktop.label}
           </CommandItem>
           <CommandItem onSelect={() => setSubMenu('markdownStyle')}>
@@ -399,24 +422,18 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="导航">
-          {navigationConfig.internal.map((item) => {
-            const Icon = getIcon(item.icon)
-            return (
-              <CommandItem key={item.path} onSelect={() => handleNavigate(item.path)}>
-                {Icon && <Icon className="size-4" />}
-                {item.label}
-              </CommandItem>
-            )
-          })}
-          {navigationConfig.external.map((item) => {
-            const Icon = getIcon(item.icon)
-            return (
-              <CommandItem key={item.url} onSelect={() => handleExternalLink(item.url)}>
-                {Icon && <Icon className="size-4" />}
-                {item.label}
-              </CommandItem>
-            )
-          })}
+          {internalNavigationItems.map(item => (
+            <CommandItem key={item.path} onSelect={() => handleNavigate(item.path)}>
+              <item.Icon className="size-4" />
+              {item.label}
+            </CommandItem>
+          ))}
+          {externalNavigationItems.map(item => (
+            <CommandItem key={item.url} onSelect={() => handleExternalLink(item.url)}>
+              <item.Icon className="size-4" />
+              {item.label}
+            </CommandItem>
+          ))}
         </CommandGroup>
       </>
     )

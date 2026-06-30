@@ -18,6 +18,16 @@ import {
   usePreviewStore,
 } from '@/stores/preview'
 
+const internalNavigationItems = navigationConfig.internal.map(item => ({
+  ...item,
+  Icon: getIcon(item.icon),
+}))
+
+const externalNavigationItems = navigationConfig.external.map(item => ({
+  ...item,
+  Icon: getIcon(item.icon),
+}))
+
 export default function MarkdownPreviewerSidebar() {
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
@@ -104,53 +114,47 @@ export default function MarkdownPreviewerSidebar() {
 
       <div className="flex-1" />
 
-      {navigationConfig.internal.map((item) => {
-        const Icon = getIcon(item.icon)
-        return (
-          <Tooltip key={item.path}>
-            <TooltipTrigger
-              render={(
-                <Link
-                  to={item.path}
-                  aria-label={item.label}
-                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-                >
-                  <Icon className="size-4" />
-                </Link>
-              )}
-            />
-            <TooltipContent side="left">
-              {item.label}
-            </TooltipContent>
-          </Tooltip>
-        )
-      })}
+      {internalNavigationItems.map(item => (
+        <Tooltip key={item.path}>
+          <TooltipTrigger
+            render={(
+              <Link
+                to={item.path}
+                aria-label={item.label}
+                className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+              >
+                <item.Icon className="size-4" />
+              </Link>
+            )}
+          />
+          <TooltipContent side="left">
+            {item.label}
+          </TooltipContent>
+        </Tooltip>
+      ))}
 
       <Separator orientation="horizontal" className="my-1 px-1" />
 
-      {navigationConfig.external.map((item) => {
-        const Icon = getIcon(item.icon)
-        return (
-          <Tooltip key={item.url}>
-            <TooltipTrigger
-              render={(
-                <a
-                  href={item.url}
-                  aria-label={item.label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-                >
-                  <Icon className="size-4" />
-                </a>
-              )}
-            />
-            <TooltipContent side="left">
-              {item.label}
-            </TooltipContent>
-          </Tooltip>
-        )
-      })}
+      {externalNavigationItems.map(item => (
+        <Tooltip key={item.url}>
+          <TooltipTrigger
+            render={(
+              <a
+                href={item.url}
+                aria-label={item.label}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+              >
+                <item.Icon className="size-4" />
+              </a>
+            )}
+          />
+          <TooltipContent side="left">
+            {item.label}
+          </TooltipContent>
+        </Tooltip>
+      ))}
     </div>
   )
 }

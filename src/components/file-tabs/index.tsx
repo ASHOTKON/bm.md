@@ -98,7 +98,7 @@ export function FileTabs() {
       <div
         role="tablist"
         aria-label="打开的文件"
-        className="scrollbar-none flex min-w-0 flex-1 overflow-x-auto"
+        className="flex min-w-0 flex-1 scrollbar-none overflow-x-auto"
       >
         {files.map((file, index) => (
           <div
