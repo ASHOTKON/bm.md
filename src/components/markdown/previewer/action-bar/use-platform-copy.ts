@@ -18,6 +18,9 @@ export function usePlatformCopy(platform: Platform): PlatformCopyResult {
   const content = useFilesStore(state => state.currentContent)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
+  const mermaidTheme = usePreviewStore(state => state.mermaidTheme)
+  const infographic = usePreviewStore(state => state.infographic)
+  const customCss = usePreviewStore(state => state.customCss)
   const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
   const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)
   const getRenderedHtml = usePreviewStore(state => state.getRenderedHtml)
@@ -39,6 +42,10 @@ export function usePlatformCopy(platform: Platform): PlatformCopyResult {
         markdown: content,
         markdownStyle,
         codeTheme,
+        mermaidTheme,
+        infographicTheme: infographic.theme,
+        infographicPalette: infographic.palette,
+        customCss,
         enableFootnoteLinks,
         openLinksInNewWindow,
         platform,
@@ -56,7 +63,7 @@ export function usePlatformCopy(platform: Platform): PlatformCopyResult {
     finally {
       setIsLoading(false)
     }
-  }, [content, markdownStyle, codeTheme, enableFootnoteLinks, openLinksInNewWindow, platform, getRenderedHtml, setRenderedHtml])
+  }, [content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, platform, getRenderedHtml, setRenderedHtml])
 
   return { getHtml, isLoading, error }
 }

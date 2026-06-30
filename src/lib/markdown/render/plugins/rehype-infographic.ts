@@ -1,46 +1,20 @@
-import type { Element } from 'hast'
 import { renderToString } from '@antv/infographic/ssr'
 import { isValidPalette, isValidTheme } from '@/themes/infographic-theme'
 import { createSvgRendererPlugin } from './rehype-svg-renderer'
+import { makeSvgResponsive } from './svg-style'
 
 export interface RehypeInfographicOptions {
   theme?: string
   palette?: string
 }
 
-/**
- * 从 SSR 渲染结果中提取纯 SVG 内容
- * renderToString 返回的格式包含 XML 声明和样式表引用，需要移除
- */
 function extractSvgContent(svgString: string): string {
-  if (!svgString || typeof svgString !== 'string') {
-    throw new Error('Invalid SVG string: empty or non-string input')
-  }
-
   const svgMatch = svgString.match(/<svg[\s\S]*<\/svg>/i)
   if (!svgMatch) {
-    throw new Error('Invalid SVG string: no <svg> element found')
+    throw new Error('未找到 SVG 输出')
   }
 
   return svgMatch[0]
-}
-
-/**
- * 调整 SVG 节点的样式：追加尺寸控制样式，保留已有样式
- */
-function adjustSvgStyle(svgNode: Element): void {
-  const props = svgNode.properties || {}
-  const existingStyle = typeof props.style === 'string' ? props.style : ''
-
-  delete props.width
-  delete props.height
-
-  const additionalStyle = 'max-width:100%;height:auto;visibility:visible;'
-  props.style = existingStyle
-    ? `${existingStyle};${additionalStyle}`
-    : additionalStyle
-
-  svgNode.properties = props
 }
 
 /**
@@ -74,7 +48,7 @@ const rehypeInfographic = createSvgRendererPlugin<RehypeInfographicOptions>({
     return renderToString(syntax)
   },
   extractSvg: extractSvgContent,
-  adjustSvgStyle,
+  adjustSvgStyle: svgNode => makeSvgResponsive(svgNode, { visible: true }),
 })
 
 export default rehypeInfographic

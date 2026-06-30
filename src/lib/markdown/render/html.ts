@@ -18,7 +18,7 @@ import { loadCodeThemeCss } from '@/themes/code-theme/loader'
 import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
 import { loadKatexCss } from '../utils'
 import { getAdapterPlugins } from './adapters'
-import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeInfographic, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
+import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeInfographic, rehypeKatexMetadata, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
 import { sanitizeSchema } from './sanitize-schema'
 
 export interface RenderOptions {
@@ -73,7 +73,13 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidThe
     .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeMermaid, { theme: mermaidTheme })
     .use(rehypeInfographic, { theme: infographicTheme, palette: infographicPalette })
-    .use(rehypeKatex)
+    .use(rehypeKatex, {
+      output: 'htmlAndMathml',
+      trust: false,
+      maxSize: 500,
+      maxExpand: 1000,
+    })
+    .use(rehypeKatexMetadata)
     .use(rehypeHighlight)
     .use(rehypeFigureWrapper)
 
