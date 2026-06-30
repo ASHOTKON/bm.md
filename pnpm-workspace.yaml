@@ -6,7 +6,4 @@ allowBuilds:
 
 catalogMode: manual
 
-minimumReleaseAgeExclude:
-  - lint-staged@17.0.8
-
 shellEmulator: true
