@@ -8,7 +8,6 @@ export default antfu({
   rules: {
     'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
     'react-refresh/only-export-components': 'off',
-    'markdown/no-multiple-h1': 'off',
   },
   ignores: [
     'bin/**',
@@ -16,6 +15,11 @@ export default antfu({
     'src/components/ui/**',
     'src/hooks/use-mobile.ts',
   ],
+}, {
+  files: ['**/*.md'],
+  rules: {
+    'markdown/no-multiple-h1': 'off',
+  },
 }, {
   plugins: {
     'better-tailwindcss': eslintPluginBetterTailwindcss,
