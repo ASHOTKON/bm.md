@@ -57,9 +57,9 @@ import {
   PREVIEW_WIDTH_MOBILE,
   usePreviewStore,
 } from '@/stores/preview'
-import { codeThemes } from '@/themes/code-theme'
+import { codeThemes } from '@/themes/code-theme/metadata'
 import { infographicPalettes, infographicThemes } from '@/themes/infographic-theme'
-import { markdownStyles } from '@/themes/markdown-style'
+import { markdownStyles } from '@/themes/markdown-style/metadata'
 import { mermaidThemes } from '@/themes/mermaid-theme'
 import { useHotkeys } from './use-hotkeys'
 

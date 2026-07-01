@@ -3,6 +3,7 @@ import type { Plugin } from 'unified'
 import type { PlatformAdapter } from './types'
 
 import { visit } from 'unist-util-visit'
+import { getTextContent, hasChildren, isElement } from '@/lib/markdown/hast'
 
 interface FootnoteLink {
   id: number
@@ -27,30 +28,8 @@ function shouldSkipFootnote(href: string): boolean {
     || href.startsWith('../')
 }
 
-function isElement(node: unknown): node is Element {
-  return !!node && typeof node === 'object' && (node as Element).type === 'element'
-}
-
-function hasChildren(node: unknown): node is Root | Element {
-  return !!node && typeof node === 'object' && Array.isArray((node as Root).children)
-}
-
 function extractLinkText(node: Element): string {
-  const texts: string[] = []
-  const walk = (n: Element | Text) => {
-    if (n.type === 'text') {
-      texts.push(n.value)
-    }
-    else if (n.type === 'element' && n.children) {
-      for (const child of n.children) {
-        if (child.type === 'text' || child.type === 'element') {
-          walk(child)
-        }
-      }
-    }
-  }
-  walk(node)
-  return texts.join('').trim() || (typeof node.properties?.href === 'string' ? node.properties.href : '')
+  return getTextContent(node).trim() || (typeof node.properties?.href === 'string' ? node.properties.href : '')
 }
 
 /**

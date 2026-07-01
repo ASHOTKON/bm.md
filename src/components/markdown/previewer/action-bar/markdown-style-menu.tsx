@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePreviewStore } from '@/stores/preview'
-import { markdownStyles } from '@/themes/markdown-style'
+import { markdownStyles } from '@/themes/markdown-style/metadata'
 
 const styleTooltip = '排版样式'
 const styleAriaLabel = '排版样式'

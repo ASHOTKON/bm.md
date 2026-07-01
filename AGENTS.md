@@ -22,7 +22,7 @@ bm.md 是 Markdown 排版工具，同时发布为：
 pnpm dev                    # 开发服务器，端口 2663
 pnpm build                  # 先 openapi:generate，再 vite build（顺序不可换）
 pnpm build:cli              # 仅打包 CLI 到 bin/
-pnpm openapi:generate       # 生成 OpenAPI（需 ./scripts/ignore-css/register.mjs 屏蔽 CSS 导入）
+pnpm openapi:generate       # 生成 OpenAPI
 pnpm typecheck              # tsc --noEmit
 pnpm lint:fix               # eslint --fix（pre-commit 通过 simple-git-hooks 自动对暂存文件执行）
 
@@ -68,7 +68,6 @@ src/
 └── sw.ts            # PWA Service Worker（vite-plugin-pwa injectManifest）
 
 scripts/vite/        # 自定义 vite 插件（CSS/HTML 极简化、修复 nitro 内联动态导入、markdown 插件）
-scripts/ignore-css/  # tsx 运行时 hook，让 openapi:generate 可以 import 含 css 的模块
 preset/              # Nitro 自定义 preset（aliyun-esa / tencent-edgeone）
 ```
 

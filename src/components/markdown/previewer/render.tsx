@@ -192,7 +192,7 @@ export default function MarkdownRender() {
     <iframe
       ref={iframeRef}
       id="bm-preview-iframe"
-      title="markdown preview"
+      title="Markdown 预览"
       className="size-full border-0"
       sandbox="allow-same-origin allow-modals"
       srcDoc={iframeShell}

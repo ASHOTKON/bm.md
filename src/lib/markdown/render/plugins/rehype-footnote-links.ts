@@ -1,6 +1,7 @@
-import type { Element, Root, Text } from 'hast'
+import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
 import { visit } from 'unist-util-visit'
+import { getTextContent } from '@/lib/markdown/hast'
 
 interface FootnoteLink {
   id: number
@@ -44,7 +45,7 @@ const rehypeFootnoteLinks: Plugin<[Options?], Root> = (options = {}) => {
         return
       }
 
-      const text = extractText(node)
+      const text = getTextContent(node).trim() || node.properties.href?.toString() || ''
       const id = counter++
       links.push({ id, href, text })
       seenUrls.add(href)
@@ -104,26 +105,6 @@ const rehypeFootnoteLinks: Plugin<[Options?], Root> = (options = {}) => {
 
     tree.children.push(footnoteSection)
   }
-}
-
-function extractText(node: Element): string {
-  const texts: string[] = []
-
-  function walk(n: Element | Text) {
-    if (n.type === 'text') {
-      texts.push(n.value)
-    }
-    else if (n.type === 'element' && n.children) {
-      for (const child of n.children) {
-        if (child.type === 'text' || child.type === 'element') {
-          walk(child)
-        }
-      }
-    }
-  }
-
-  walk(node)
-  return texts.join('').trim() || node.properties?.href?.toString() || ''
 }
 
 export default rehypeFootnoteLinks

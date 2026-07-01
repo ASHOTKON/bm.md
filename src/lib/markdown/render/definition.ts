@@ -1,8 +1,8 @@
 import type { CliDefinition } from '../types/definition'
 import * as z from 'zod'
-import { codeThemeIds } from '@/themes/code-theme'
+import { codeThemeIds } from '@/themes/code-theme/metadata'
 import { infographicPaletteIds, infographicThemeIds } from '@/themes/infographic-theme'
-import { markdownStyleIds } from '@/themes/markdown-style'
+import { markdownStyleIds } from '@/themes/markdown-style/metadata'
 import { mermaidThemeIds } from '@/themes/mermaid-theme'
 import { INPUT_SIZE_ERROR, MAX_INPUT_SIZE } from '../constants'
 import { outputOption } from '../types/definition'
@@ -29,7 +29,7 @@ export const renderDefinition = {
     customCss: z.string().max(50000, '自定义 CSS 不能超过 50000 字符').optional().default('').describe('自定义 CSS 样式，在主题样式之后应用。选择器需约束在 #bm-md 下，例如：#bm-md h1 { color: red; }'),
     enableFootnoteLinks: z.boolean().optional().default(true).describe('是否将文中链接自动转换为脚注形式，便于阅读时查看原始链接'),
     openLinksInNewWindow: z.boolean().optional().default(true).describe('是否为所有外部链接添加 target="_blank"，在新窗口打开'),
-    platform: platformSchema.optional().default('html').describe('目标发布平台，会针对平台特性进行适配优化。可选值: html（通用网页）, wechat（微信公众号）, zhihu（知乎专栏）, juejin（掘金）'),
+    platform: platformSchema.optional().default('html').describe('目标发布平台。wechat 会进行微信公众号适配，zhihu 与 juejin 使用通用 HTML 输出'),
     footnoteLabel: z.string().max(50).optional().default('Footnotes').describe('GFM 脚注区域标题'),
     referenceTitle: z.string().max(50).optional().default('References').describe('外部链接参考区域标题'),
   }),
@@ -49,8 +49,8 @@ export const renderDefinition = {
       { name: 'infographicPalette', description: 'Infographic 信息图配色 ID', type: 'string', choices: infographicPaletteIds, valueName: 'id' },
       { name: 'customCss', description: '追加自定义 CSS', type: 'string', valueName: 'css' },
       { name: 'customCssFile', description: '从文件追加自定义 CSS', type: 'string', input: false, valueName: 'file' },
-      { name: 'enableFootnoteLinks', description: '将文中链接自动转换为脚注形式', type: 'boolean', cliKey: 'footnoteLinks', flag: 'footnote-links' },
-      { name: 'openLinksInNewWindow', description: '为外部链接添加 target="_blank"', type: 'boolean', cliKey: 'openLinks', flag: 'open-links' },
+      { name: 'enableFootnoteLinks', description: '关闭文中链接脚注转换', type: 'boolean', cliKey: 'footnoteLinks', flag: 'no-footnote-links' },
+      { name: 'openLinksInNewWindow', description: '关闭外部链接新窗口打开', type: 'boolean', cliKey: 'openLinks', flag: 'no-open-links' },
       { name: 'footnoteLabel', description: 'GFM 脚注区域标题', type: 'string', valueName: 'text' },
       { name: 'referenceTitle', description: '外部链接参考区域标题', type: 'string', valueName: 'text' },
     ],

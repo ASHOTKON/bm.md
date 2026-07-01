@@ -1,6 +1,8 @@
 import type { Plugin } from 'unified'
-import type { Platform } from './adapters'
+import type * as z from 'zod'
+import type { renderDefinition } from './definition'
 import juice from 'juice'
+import katexCss from 'katex/dist/katex.css?inline'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeGithubAlert from 'rehype-github-alert'
 import rehypeHighlight from 'rehype-highlight'
@@ -16,36 +18,13 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 import { loadCodeThemeCss } from '@/themes/code-theme/loader'
 import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
-import { loadKatexCss } from '../utils'
 import { getAdapterPlugins } from './adapters'
 import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeInfographic, rehypeKatexMetadata, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
 import { sanitizeSchema } from './sanitize-schema'
 
-export interface RenderOptions {
-  markdown: string
-  markdownStyle?: string
-  codeTheme?: string
-  mermaidTheme?: string
-  infographicTheme?: string
-  infographicPalette?: string
-  customCss?: string
-  enableFootnoteLinks?: boolean
-  openLinksInNewWindow?: boolean
-  platform?: Platform
-  footnoteLabel?: string
-  referenceTitle?: string
-}
+export type RenderOptions = z.input<typeof renderDefinition.inputSchema>
 
-interface ProcessorOptions {
-  enableFootnoteLinks?: boolean
-  openLinksInNewWindow?: boolean
-  mermaidTheme?: string
-  infographicTheme?: string
-  infographicPalette?: string
-  platform?: Platform
-  footnoteLabel?: string
-  referenceTitle?: string
-}
+type ProcessorOptions = Pick<RenderOptions, 'enableFootnoteLinks' | 'openLinksInNewWindow' | 'mermaidTheme' | 'infographicTheme' | 'infographicPalette' | 'platform' | 'footnoteLabel' | 'referenceTitle'>
 
 function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
   const processor = unified()
@@ -134,11 +113,11 @@ export async function render(options: RenderOptions): Promise<string> {
 
   const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
   const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
-  const katexCss = hasKatex ? loadKatexCss() : ''
+  const mathCss = hasKatex ? katexCss : ''
   const css = [
     markdownStyleCss ?? '',
     codeThemeCss ?? '',
-    katexCss ?? '',
+    mathCss,
     customCss,
   ].filter(Boolean).join('\n')
 

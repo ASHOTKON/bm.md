@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePreviewStore } from '@/stores/preview'
-import { codeThemes } from '@/themes/code-theme'
+import { codeThemes } from '@/themes/code-theme/metadata'
 
 const codeThemeTooltip = '代码主题'
 const codeThemeAriaLabel = '代码主题'

@@ -258,8 +258,8 @@ pnpm dlx bmmd lint article.md --fix
 | `--infographic-palette <id>` | `antv`         | Infographic 信息图配色                        |
 | `--custom-css <css>`         | -              | 追加自定义 CSS                                |
 | `--custom-css-file <file>`   | -              | 从文件追加自定义 CSS                          |
-| `--footnote-links`           | 开启           | 将文中链接自动转换为脚注形式                  |
-| `--open-links`               | 开启           | 为外部链接添加 `target="_blank"`              |
+| `--no-footnote-links`        | 开启           | 关闭文中链接脚注转换                          |
+| `--no-open-links`            | 开启           | 不为外部链接添加 `target="_blank"`            |
 | `--footnote-label <text>`    | `Footnotes`    | GFM 脚注区域标题                              |
 | `--reference-title <text>`   | `References`   | 外部链接参考区域标题                          |
 

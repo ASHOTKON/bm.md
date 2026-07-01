@@ -8,9 +8,10 @@ import { copyText } from '@/lib/clipboard'
 interface CopyButtonProps {
   text: string
   className?: string
+  ariaLabel?: string
 }
 
-export function CopyButton({ text, className }: CopyButtonProps) {
+export function CopyButton({ text, className, ariaLabel = '复制' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -26,7 +27,7 @@ export function CopyButton({ text, className }: CopyButtonProps) {
   }
 
   return (
-    <Button variant="ghost" size="icon-sm" onClick={handleCopy} className={className} aria-label="复制">
+    <Button variant="ghost" size="icon-sm" onClick={handleCopy} className={className} aria-label={ariaLabel}>
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
     </Button>
   )

@@ -1,5 +1,7 @@
 import type { IconName } from '@/lib/icon-map'
+import type { Platform } from '@/lib/markdown/render/adapters'
 import type { EditorBooleanKey, EditorBooleanSetterKey } from '@/stores/editor'
+import { env } from '@/env'
 import { appConfig } from './app'
 
 // ========== 类型定义 ==========
@@ -69,7 +71,7 @@ export const platformConfig = {
     icon: 'Code2',
     hotkey: { key: '0', shift: true },
   },
-} as const satisfies Record<string, PlatformConfigItem>
+} as const satisfies Record<Platform, PlatformConfigItem>
 
 export type SupportedPlatform = keyof typeof platformConfig
 
@@ -168,7 +170,7 @@ export const navigationConfig = {
 
 // ========== 开发态快捷键冲突检测 ==========
 
-if (import.meta.env.DEV) {
+if (env.DEV) {
   const hotkeyToCommand = new Map<string, string>()
 
   const checkHotkey = (key: string, shift: boolean, command: string) => {

@@ -1,34 +1,8 @@
 import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
 import { visit } from 'unist-util-visit'
+import { getClassList, getTextContent } from '@/lib/markdown/hast'
 import { createRichMetadata, richData } from './rich-metadata'
-
-function getClassList(node: Element): string[] {
-  const className = node.properties?.className
-  if (Array.isArray(className)) {
-    return className.filter((item): item is string => typeof item === 'string')
-  }
-  if (typeof className === 'string') {
-    return className.split(/\s+/).filter(Boolean)
-  }
-  return []
-}
-
-function textContent(node: Element): string {
-  const texts: string[] = []
-  const walk = (element: Element) => {
-    for (const child of element.children) {
-      if (child.type === 'text') {
-        texts.push(child.value)
-      }
-      else if (child.type === 'element') {
-        walk(child)
-      }
-    }
-  }
-  walk(node)
-  return texts.join('')
-}
 
 function isDisplayKatex(node: Element): boolean {
   return getClassList(node).includes('katex-display')
@@ -52,7 +26,7 @@ const rehypeKatexMetadata: Plugin<[], Root> = () => {
 
       node.properties = {
         ...node.properties,
-        ...richData(createRichMetadata('katex', textContent(node))),
+        ...richData(createRichMetadata('katex', getTextContent(node))),
       }
     })
   }

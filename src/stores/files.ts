@@ -1,3 +1,4 @@
+import { debounce } from 'es-toolkit'
 import { toast } from 'sonner'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -29,6 +30,12 @@ interface FilesState {
   getActiveFile: () => MarkdownFile | undefined
   initialize: () => Promise<void>
   setHasHydrated: (value: boolean) => void
+}
+
+interface SaveRequest {
+  content: string
+  onSuccess: () => void
+  onError: (err: Error) => void
 }
 
 const DEFAULT_FILE_NAME = 'bm.md'
@@ -75,19 +82,10 @@ function ensureUniqueName(name: string, files: MarkdownFile[], excludeId?: strin
   return `${baseName} (${i})${ext}`
 }
 
-const pendingSaves = new Map<string, ReturnType<typeof setTimeout>>()
+const pendingSaves = new Map<string, ReturnType<typeof createSaveTask>>()
 
-function cancelPendingSave(id: string) {
-  const timeout = pendingSaves.get(id)
-  if (timeout) {
-    clearTimeout(timeout)
-    pendingSaves.delete(id)
-  }
-}
-
-function debouncedSave(id: string, content: string, onSuccess: () => void, onError: (err: Error) => void) {
-  cancelPendingSave(id)
-  const timeout = setTimeout(async () => {
+function createSaveTask(id: string) {
+  return debounce(async ({ content, onSuccess, onError }: SaveRequest) => {
     pendingSaves.delete(id)
     try {
       await saveFileContent(id, content)
@@ -97,7 +95,20 @@ function debouncedSave(id: string, content: string, onSuccess: () => void, onErr
       onError(err instanceof Error ? err : new Error(String(err)))
     }
   }, 500)
-  pendingSaves.set(id, timeout)
+}
+
+function cancelPendingSave(id: string) {
+  const saveTask = pendingSaves.get(id)
+  if (saveTask) {
+    saveTask.cancel()
+    pendingSaves.delete(id)
+  }
+}
+
+function debouncedSave(id: string, content: string, onSuccess: () => void, onError: (err: Error) => void) {
+  const saveTask = pendingSaves.get(id) ?? createSaveTask(id)
+  pendingSaves.set(id, saveTask)
+  saveTask({ content, onSuccess, onError })
 }
 
 let switchSeq = 0

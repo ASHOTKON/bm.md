@@ -3,8 +3,6 @@ import { FileText, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
-const MAX_NAME_LENGTH = 20
-
 interface FileTabProps {
   file: MarkdownFile
   isActive: boolean
@@ -16,10 +14,6 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(file.name)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const displayName = file.name.length > MAX_NAME_LENGTH
-    ? `${file.name.slice(0, MAX_NAME_LENGTH)}...`
-    : file.name
 
   const handleDoubleClick = useCallback(() => {
     setEditName(file.name)
@@ -78,7 +72,6 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
           onKeyDown={handleKeyDown}
           className={`
             h-5 w-24 border-b border-primary bg-transparent px-0.5 text-xs
-            outline-none
           `}
         />
       </div>
@@ -100,7 +93,7 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
       onDoubleClick={handleDoubleClick}
     >
       <FileText className="size-3.5 shrink-0" aria-hidden="true" />
-      <span className="max-w-48 truncate">{displayName}</span>
+      <span className="max-w-48 truncate" title={file.name}>{file.name}</span>
       <button
         type="button"
         aria-label={`关闭 ${file.name}`}
@@ -116,6 +109,7 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
               opacity-0
               group-hover:opacity-60
               group-hover:hover:opacity-100
+              focus-visible:opacity-100
             `,
         )}
         onClick={(e) => {

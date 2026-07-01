@@ -36,5 +36,5 @@ function ApiReferencePage() {
     }
   }, [])
 
-  return <div id="scalar-api-reference" className="min-h-screen" />
+  return <div id="scalar-api-reference" className="min-h-dvh" />
 }

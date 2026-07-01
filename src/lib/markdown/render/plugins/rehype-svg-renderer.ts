@@ -4,6 +4,7 @@ import type { RichMetadata } from './rich-metadata'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { SKIP, visit } from 'unist-util-visit'
+import { getClassList, getTextContent } from '@/lib/markdown/hast'
 import { createRichMetadata, richData } from './rich-metadata'
 import { prefixSvgIds, sanitizeSvgElement } from './svg-safety'
 
@@ -29,17 +30,6 @@ export interface SvgRendererConfig<TOptions> {
   adjustSvgStyle?: (svgNode: Element) => void
 }
 
-function getClassList(node: Element): string[] {
-  const className = node.properties?.className
-  if (Array.isArray(className)) {
-    return className.filter((item): item is string => typeof item === 'string')
-  }
-  if (typeof className === 'string') {
-    return className.split(/\s+/).filter(Boolean)
-  }
-  return []
-}
-
 export function isCodeBlock(node: Element, languageId: string): boolean {
   if (node.tagName !== 'pre')
     return false
@@ -62,10 +52,7 @@ export function extractText(pre: Element): string {
   )
   if (!code)
     return ''
-  return code.children
-    .filter((c): c is { type: 'text', value: string } => c.type === 'text')
-    .map(c => c.value)
-    .join('')
+  return getTextContent(code)
 }
 
 /**

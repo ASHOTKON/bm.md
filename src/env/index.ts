@@ -20,6 +20,7 @@ function getPrivate(key: string): string | undefined {
 
 export const env = {
   // PUBLIC（客户端可用，打包时内联）
+  DEV: import.meta.env.DEV,
   VITE_APP_URL: import.meta.env.VITE_APP_URL as string | undefined,
   VITE_API_URL: import.meta.env.VITE_API_URL as string | undefined,
 

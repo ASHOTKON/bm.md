@@ -1,4 +1,5 @@
 import type { Element, RootContent, Text } from 'hast'
+import { isElement } from '@/lib/markdown/hast'
 
 const allowedTags = new Set([
   'a',
@@ -75,10 +76,6 @@ const idReferenceAttributeNames = new Set([
   'arialabelledby',
   'ariaowns',
 ])
-
-function isElement(node: RootContent): node is Element {
-  return node.type === 'element'
-}
 
 function isText(node: RootContent): node is Text {
   return node.type === 'text'

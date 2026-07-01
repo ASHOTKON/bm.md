@@ -115,9 +115,12 @@ export function CustomCssDialog() {
             </FieldLabel>
             <Textarea
               id="custom-css"
+              name="custom-css"
               value={localCss}
               onChange={e => setLocalCss(e.target.value)}
-              placeholder="输入自定义 CSS 样式..."
+              placeholder="输入仅作用于 #bm-md 的自定义 CSS…"
+              spellCheck={false}
+              autoComplete="off"
               className="max-h-60 min-h-40 font-mono text-xs"
             />
             <div className="flex items-center justify-between">
@@ -128,7 +131,7 @@ export function CustomCssDialog() {
                 {' '}
                 字符
               </FieldDescription>
-              {isOverLimit && <FieldError>超出限制</FieldError>}
+              {isOverLimit && <FieldError>最多 50,000 字符</FieldError>}
             </div>
           </Field>
           <Collapsible open={examplesOpen} onOpenChange={setExamplesOpen}>

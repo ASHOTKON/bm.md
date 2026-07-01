@@ -89,7 +89,7 @@ function findSafePageBreaks(
 
 export async function exportPdf() {
   if (isExporting) {
-    toast.info('正在导出中，请稍候...')
+    toast.info('正在导出中，请稍候…')
     return
   }
 
@@ -98,7 +98,7 @@ export async function exportPdf() {
     return
 
   isExporting = true
-  const loadingToast = toast.loading('正在生成 PDF...')
+  const loadingToast = toast.loading('正在生成 PDF…')
 
   try {
     const { snapdom } = await import('@zumer/snapdom')
