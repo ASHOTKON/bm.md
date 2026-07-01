@@ -1,5 +1,5 @@
-import type * as z from 'zod'
 import { ORPCError, os } from '@orpc/server'
+import * as z from 'zod'
 import { renderDefinition } from './definition'
 
 export {
@@ -22,6 +22,16 @@ export async function render(input: z.infer<typeof renderDefinition.inputSchema>
   }
 }
 
+export async function renderPreview(input: z.infer<typeof renderDefinition.inputSchema>) {
+  try {
+    const { renderPreview } = await import('./html')
+    return renderPreview(input)
+  }
+  catch (error) {
+    throw new ORPCError('INTERNAL_SERVER_ERROR', error)
+  }
+}
+
 export const handler = os
   .route({
     method: 'POST',
@@ -32,3 +42,11 @@ export const handler = os
   .handler(async ({ input }) => ({
     result: await render(input),
   }))
+
+export const previewHandler = os
+  .input(renderDefinition.inputSchema)
+  .output(z.object({
+    html: z.string(),
+    css: z.string(),
+  }))
+  .handler(async ({ input }) => renderPreview(input))

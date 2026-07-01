@@ -24,6 +24,11 @@ import { sanitizeSchema } from './sanitize-schema'
 
 export type RenderOptions = z.input<typeof renderDefinition.inputSchema>
 
+export interface PreviewRenderResult {
+  html: string
+  css: string
+}
+
 type ProcessorOptions = Pick<RenderOptions, 'enableFootnoteLinks' | 'openLinksInNewWindow' | 'mermaidTheme' | 'infographicTheme' | 'infographicPalette' | 'platform' | 'footnoteLabel' | 'referenceTitle'>
 
 function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
@@ -85,41 +90,12 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidThe
 }
 
 export async function render(options: RenderOptions): Promise<string> {
-  const {
-    markdown,
-    markdownStyle,
-    codeTheme,
-    mermaidTheme,
-    infographicTheme,
-    infographicPalette,
-    customCss = '',
-    enableFootnoteLinks = true,
-    openLinksInNewWindow = true,
-    platform = 'html',
-    footnoteLabel = 'Footnotes',
-    referenceTitle = 'References',
-  } = options
+  const html = await renderMarkdownHtml(options)
+  const css = collectRenderCss(options, html)
 
-  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform, footnoteLabel, referenceTitle })
-  const html = (await processor.process(markdown)).toString()
-
-  const hasKatex = html.includes('class="katex"')
-    || html.includes('class="katex-display"')
-    || html.includes('class="katex-mathml"')
-
-  if (!markdownStyle && !codeTheme && !hasKatex && !customCss) {
+  if (!css) {
     return html
   }
-
-  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
-  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
-  const mathCss = hasKatex ? katexCss : ''
-  const css = [
-    markdownStyleCss ?? '',
-    codeThemeCss ?? '',
-    mathCss,
-    customCss,
-  ].filter(Boolean).join('\n')
 
   const wrapped = `<section id="bm-md">${html}</section>`
 
@@ -133,4 +109,57 @@ export async function render(options: RenderOptions): Promise<string> {
     console.error('Juice inline error:', error)
     return wrapped
   }
+}
+
+export async function renderPreview(options: RenderOptions): Promise<PreviewRenderResult> {
+  const html = await renderMarkdownHtml(options)
+
+  return {
+    html,
+    css: collectRenderCss(options, html),
+  }
+}
+
+export async function renderMarkdownHtml(options: RenderOptions): Promise<string> {
+  const {
+    markdown,
+    mermaidTheme,
+    infographicTheme,
+    infographicPalette,
+    enableFootnoteLinks = true,
+    openLinksInNewWindow = true,
+    platform = 'html',
+    footnoteLabel = 'Footnotes',
+    referenceTitle = 'References',
+  } = options
+
+  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform, footnoteLabel, referenceTitle })
+
+  return (await processor.process(markdown)).toString()
+}
+
+export function collectRenderCss(options: RenderOptions, html: string): string {
+  const {
+    markdownStyle,
+    codeTheme,
+    customCss = '',
+  } = options
+
+  const hasKatex = html.includes('class="katex"')
+    || html.includes('class="katex-display"')
+    || html.includes('class="katex-mathml"')
+
+  if (!markdownStyle && !codeTheme && !hasKatex && !customCss) {
+    return ''
+  }
+
+  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
+  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
+  const mathCss = hasKatex ? katexCss : ''
+  return [
+    markdownStyleCss ?? '',
+    codeThemeCss ?? '',
+    mathCss,
+    customCss,
+  ].filter(Boolean).join('\n')
 }

@@ -40,6 +40,10 @@ interface SaveRequest {
 
 const DEFAULT_FILE_NAME = 'bm.md'
 
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
+}
+
 function extractH1Title(content: string): string | null {
   const lines = content.split('\n')
   for (const line of lines) {
@@ -167,11 +171,11 @@ export const useFilesStore = create<FilesState>()(
           await saveFileContent(id, content)
         }
         catch (err) {
-          const message = err instanceof Error ? err.message : String(err)
-          toast.error(`创建文件失败: ${message}`)
-          throw err
+          const message = getErrorMessage(err)
+          set({ lastSaveError: message })
+          toast.error(`创建文件保存失败: ${message}`)
         }
-        set({ files: [...files, newFile] })
+        set({ files: [...files, newFile], activeFileId: id, currentContent: content })
         return id
       },
 
@@ -184,7 +188,9 @@ export const useFilesStore = create<FilesState>()(
           await deleteFileContent(id)
         }
         catch (err) {
-          console.error('删除文件内容失败:', err)
+          const message = getErrorMessage(err)
+          set({ lastSaveError: message })
+          toast.warning(`删除文件内容失败: ${message}`)
         }
 
         const newFiles = files.filter(f => f.id !== id)
@@ -227,7 +233,9 @@ export const useFilesStore = create<FilesState>()(
             await saveFileContent(activeFileId, currentContent)
           }
           catch (err) {
-            console.error('切换前保存失败:', err)
+            const message = getErrorMessage(err)
+            set({ lastSaveError: message })
+            toast.error(`保存失败: ${message}`)
           }
         }
 
@@ -281,7 +289,9 @@ export const useFilesStore = create<FilesState>()(
               await saveFileContent(id, defaultMarkdown)
             }
             catch (err) {
-              console.error('初始化保存失败:', err)
+              const message = getErrorMessage(err)
+              set({ lastSaveError: message })
+              toast.warning(`初始化保存失败: ${message}`)
             }
             files = [newFile]
             activeFileId = id

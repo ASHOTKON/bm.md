@@ -101,6 +101,18 @@ describe('openapi HTTP 错误响应', () => {
     expect(response.status).toBe(400)
   })
 
+  it('验证错误响应不回显提交的 Markdown 和 CSS 内容', async () => {
+    const sentinel = 'SHOULD_NOT_APPEAR_IN_RESPONSE'
+    const response = await submitJson('/api/markdown/render', {
+      markdown: sentinel,
+      customCss: `${sentinel}${'x'.repeat(50001)}`,
+    })
+    const body = await response.text()
+
+    expect(response.status).toBe(400)
+    expect(body).not.toContain(sentinel)
+  })
+
   it.each([
     ['referenceTitle'],
     ['footnoteLabel'],

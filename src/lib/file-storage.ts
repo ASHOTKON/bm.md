@@ -10,12 +10,20 @@ interface FileDB {
 
 const DB_NAME = 'bm.md'
 const DB_VERSION = 1
+const STORAGE_UNAVAILABLE_REASON = '浏览器存储不可用，内容仅保存在内存中，刷新页面会丢失'
 
 let db: Promise<IDBPDatabase<FileDB>> | null = null
 let dbUnavailable = false
 let dbUnavailableReason = ''
 
 const memoryFallback = new Map<string, string>()
+
+function markStorageUnavailable(): Error {
+  dbUnavailable = true
+  dbUnavailableReason = STORAGE_UNAVAILABLE_REASON
+  db = null
+  return new Error(dbUnavailableReason)
+}
 
 function getDB(): Promise<IDBPDatabase<FileDB>> {
   if (typeof window === 'undefined') {
@@ -31,11 +39,8 @@ function getDB(): Promise<IDBPDatabase<FileDB>> {
       upgrade(database) {
         database.createObjectStore('files', { keyPath: 'id' })
       },
-    }).catch((err) => {
-      dbUnavailable = true
-      dbUnavailableReason = '浏览器存储不可用，内容仅保存在内存中，刷新页面会丢失'
-      db = null
-      throw err
+    }).catch(() => {
+      throw markStorageUnavailable()
     })
   }
   return db
@@ -68,7 +73,7 @@ export async function saveFileContent(id: string, content: string): Promise<void
   memoryFallback.set(id, content)
 
   if (dbUnavailable) {
-    return
+    throw new Error(dbUnavailableReason)
   }
 
   try {
@@ -76,7 +81,7 @@ export async function saveFileContent(id: string, content: string): Promise<void
     await database.put('files', { id, content })
   }
   catch {
-    //
+    throw markStorageUnavailable()
   }
 }
 
@@ -84,7 +89,7 @@ export async function deleteFileContent(id: string): Promise<void> {
   memoryFallback.delete(id)
 
   if (dbUnavailable) {
-    return
+    throw new Error(dbUnavailableReason)
   }
 
   try {
@@ -92,6 +97,6 @@ export async function deleteFileContent(id: string): Promise<void> {
     await database.delete('files', id)
   }
   catch {
-    //
+    throw markStorageUnavailable()
   }
 }

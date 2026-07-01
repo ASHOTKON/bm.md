@@ -1,8 +1,6 @@
-import { TanStackDevtools } from '@tanstack/react-devtools'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ThemeProvider } from 'next-themes'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 
 import { NotFound } from '@/components/not-found'
 import { ThemeColorMeta } from '@/components/theme-color-meta'
@@ -16,6 +14,26 @@ import appCss from '../styles.css?url'
 
 // Google Fonts URL - 仅加载 Logo 使用的字符
 const fontUrl = `https://fonts.googleapis.cn/css2?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
+
+const Devtools = import.meta.env.DEV
+  ? lazy(async () => {
+      const [{ TanStackDevtools }, { TanStackRouterDevtoolsPanel }] = await Promise.all([
+        import('@tanstack/react-devtools'),
+        import('@tanstack/react-router-devtools'),
+      ])
+
+      return {
+        default: function DevtoolsPanel() {
+          return (
+            <TanStackDevtools
+              config={{ position: 'bottom-right' }}
+              plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
+            />
+          )
+        },
+      }
+    })
+  : null
 
 export const Route = createRootRoute({
   head: () => ({
@@ -105,17 +123,11 @@ function RootDocument() {
             <ThemeColorMeta />
           </TooltipProvider>
         </ThemeProvider>
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {Devtools && (
+          <Suspense fallback={null}>
+            <Devtools />
+          </Suspense>
+        )}
         <Scripts />
         <Toaster />
         {analyticsEnabled && (

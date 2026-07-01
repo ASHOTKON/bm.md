@@ -12,7 +12,7 @@ interface ElementBoundary {
   isHeading: boolean
 }
 
-function findSafePageBreaks(
+export function findSafePageBreaks(
   content: HTMLElement,
   canvasWidth: number,
   canvasHeight: number,
@@ -99,13 +99,16 @@ export async function exportPdf() {
 
   isExporting = true
   const loadingToast = toast.loading('正在生成 PDF…')
+  let canvas: HTMLCanvasElement | null = null
+  let pageCanvas: HTMLCanvasElement | null = null
 
   try {
     const { snapdom } = await import('@zumer/snapdom')
     const { default: JsPDF } = await import('jspdf')
 
+    // SnapDOM 当前公开选项没有 crop/clip 坐标，只能先获取完整快照再切页。
     const snapshot = await snapdom(preview.content)
-    const canvas = await snapshot.toCanvas({ scale: 2 })
+    canvas = await snapshot.toCanvas({ scale: 2 })
 
     if (canvas.width === 0 || canvas.height === 0) {
       toast.error('没有可导出的内容', { id: loadingToast })
@@ -137,6 +140,15 @@ export async function exportPdf() {
       format: 'a4',
     })
 
+    pageCanvas = document.createElement('canvas')
+    pageCanvas.width = canvas.width
+    pageCanvas.height = 1
+
+    const ctx = pageCanvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('无法创建 canvas context')
+    }
+
     let prevBreak = 0
     for (let i = 0; i <= pageBreaks.length; i++) {
       if (i > 0) {
@@ -156,14 +168,8 @@ export async function exportPdf() {
 
       const targetHeight = sourceHeight * scale
 
-      const pageCanvas = document.createElement('canvas')
       pageCanvas.width = canvas.width
       pageCanvas.height = sourceHeight
-
-      const ctx = pageCanvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('无法创建 canvas context')
-      }
 
       ctx.drawImage(
         canvas,
@@ -196,6 +202,14 @@ export async function exportPdf() {
     }
   }
   finally {
+    if (canvas) {
+      canvas.width = 0
+      canvas.height = 0
+    }
+    if (pageCanvas) {
+      pageCanvas.width = 0
+      pageCanvas.height = 0
+    }
     isExporting = false
   }
 }

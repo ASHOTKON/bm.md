@@ -11,6 +11,18 @@ const uploadSchema = z.object({
   file: z.instanceof(Blob),
 })
 
+export function validateImageFile(imageFile: Blob): string | null {
+  if (!imageFile.type.startsWith('image/')) {
+    return '只支持上传图片文件'
+  }
+
+  if (imageFile.size > maxFileSize * _1MB) {
+    return `图片大小不能超过 ${maxFileSize}MB`
+  }
+
+  return null
+}
+
 export const Route = createFileRoute('/api/upload/image')({
   server: {
     middleware: [corsMiddleware],
@@ -27,16 +39,10 @@ export const Route = createFileRoute('/api/upload/image')({
           const { file: imageFile, name: imageName } = parsed
 
           // 3. 校验文件类型和大小
-          if (!imageFile.type.startsWith('image/')) {
+          const validationError = validateImageFile(imageFile)
+          if (validationError) {
             return Response.json(
-              { error: '只支持上传图片文件' },
-              { status: 400 },
-            )
-          }
-
-          if (imageFile.size > maxFileSize * _1MB) {
-            return Response.json(
-              { error: `图片大小不能超过 ${maxFileSize}MB` },
+              { error: validationError },
               { status: 400 },
             )
           }

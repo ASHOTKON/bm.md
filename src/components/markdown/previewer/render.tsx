@@ -12,6 +12,7 @@ import { applyDarkModeToPreviewHtml } from './darkmode'
 import iframeShell from './iframe-shell.html?raw'
 
 const RENDER_DEBOUNCE_MS = 100
+const PREVIEW_STYLE_ID = 'bm-preview-style'
 
 export default function MarkdownRender() {
   const content = useFilesStore(state => state.currentContent)
@@ -36,12 +37,34 @@ export default function MarkdownRender() {
 
   const iframeReadyRef = useRef(false)
   const pendingHtmlRef = useRef<string | null>(null)
+  const pendingCssRef = useRef<string | null>(null)
   const canceledRef = useRef(false)
   const renderedHtmlRef = useRef(renderedHtml)
+  const previewCssRef = useRef('')
 
   useEffect(() => {
     renderedHtmlRef.current = renderedHtml
   }, [renderedHtml])
+
+  const updateIframeStyle = useCallback((css: string) => {
+    const iframeDoc = iframeRef.current?.contentDocument
+    const head = iframeDoc?.head
+
+    if (!head) {
+      pendingCssRef.current = css
+      return
+    }
+
+    let style = head.querySelector<HTMLStyleElement>(`#${PREVIEW_STYLE_ID}`)
+    if (!style) {
+      style = iframeDoc.createElement('style')
+      style.id = PREVIEW_STYLE_ID
+      head.append(style)
+    }
+
+    style.textContent = css
+    pendingCssRef.current = null
+  }, [iframeRef])
 
   const updateIframeContent = useCallback((html: string) => {
     const iframe = iframeRef.current
@@ -49,8 +72,11 @@ export default function MarkdownRender() {
 
     if (!body) {
       pendingHtmlRef.current = html
+      pendingCssRef.current = previewCssRef.current
       return
     }
+
+    updateIframeStyle(previewCssRef.current)
 
     const wrapper = document.createElement('body')
     wrapper.innerHTML = previewColorScheme === 'dark'
@@ -69,13 +95,14 @@ export default function MarkdownRender() {
         return true
       },
     })
-  }, [iframeRef, previewColorScheme])
+  }, [iframeRef, previewColorScheme, updateIframeStyle])
 
   const onIframeLoad = useCallback(() => {
     iframeReadyRef.current = true
     onScrollSyncLoad()
 
     const htmlToRender = pendingHtmlRef.current ?? renderedHtmlRef.current
+    updateIframeStyle(pendingCssRef.current ?? previewCssRef.current)
     if (htmlToRender) {
       updateIframeContent(htmlToRender)
       pendingHtmlRef.current = null
@@ -115,7 +142,7 @@ export default function MarkdownRender() {
         window.open(href, '_blank', 'noopener')
       })
     }
-  }, [onScrollSyncLoad, updateIframeContent, iframeRef])
+  }, [onScrollSyncLoad, updateIframeContent, updateIframeStyle, iframeRef])
 
   useEffect(() => {
     if (!renderedHtml) {
@@ -141,10 +168,11 @@ export default function MarkdownRender() {
       customCssValue: string,
       enableRefLinks: boolean,
       openNewWin: boolean,
+      colorScheme: string,
     ) => {
       try {
         const { markdown } = await import('@/lib/markdown/browser')
-        const result = await markdown.render({
+        const renderInput = {
           markdown: nextContent,
           markdownStyle: styleId,
           codeTheme: themeId,
@@ -155,10 +183,23 @@ export default function MarkdownRender() {
           enableFootnoteLinks: enableRefLinks,
           openLinksInNewWindow: openNewWin,
           ...getMarkdownLocaleTexts(),
-        })
+        }
+
+        const result = colorScheme === 'dark'
+          ? await markdown.render(renderInput)
+          : await markdown.preview(renderInput)
 
         if (!canceledRef.current) {
-          setRenderedHtml('html', result.result)
+          if ('result' in result) {
+            previewCssRef.current = ''
+            updateIframeStyle('')
+            setRenderedHtml('html', result.result)
+          }
+          else {
+            previewCssRef.current = result.css
+            updateIframeStyle(result.css)
+            setRenderedHtml('html', `<section id="bm-md">${result.html}</section>`)
+          }
         }
       }
       catch (error) {
@@ -168,7 +209,7 @@ export default function MarkdownRender() {
         }
       }
     }, RENDER_DEBOUNCE_MS),
-    [setRenderedHtml],
+    [setRenderedHtml, updateIframeStyle],
   )
 
   useEffect(() => {
@@ -178,13 +219,13 @@ export default function MarkdownRender() {
 
     clearRenderedHtmlCache()
     canceledRef.current = false
-    scheduleRender(content, markdownStyle, codeTheme, mermaidTheme, infographic.theme, infographic.palette, customCss, enableFootnoteLinks, openLinksInNewWindow)
+    scheduleRender(content, markdownStyle, codeTheme, mermaidTheme, infographic.theme, infographic.palette, customCss, enableFootnoteLinks, openLinksInNewWindow, previewColorScheme)
 
     return () => {
       canceledRef.current = true
       scheduleRender.cancel()
     }
-  }, [hasHydrated, content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, scheduleRender, clearRenderedHtmlCache])
+  }, [hasHydrated, content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, previewColorScheme, scheduleRender, clearRenderedHtmlCache])
 
   const isMobile = previewWidth === PREVIEW_WIDTH_MOBILE
 

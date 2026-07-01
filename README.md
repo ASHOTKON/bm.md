@@ -1,15 +1,15 @@
 # bm.md
 
-更好用的 Markdown 排版助手｜一键适配微信公众号、~~知乎专栏~~、~~掘金~~、网页与图片。
+更好用的 Markdown 排版助手｜微信公众号专门适配，支持输出到知乎专栏、掘金、网页与图片。
 
 ---
 
 ## ✨ 特性
 
 - 📝 **实时预览** - 基于 CodeMirror 6 的 Markdown 编辑器，所见即所得
-- 🎨 **14 种排版样式** - 从专业商务到复古怀旧，满足不同场景需求
+- 🎨 **15 种排版样式** - 从专业商务到复古怀旧，满足不同场景需求
 - 🌈 **14 种代码主题** - 支持浅色/深色多种代码高亮风格
-- 📱 **多平台适配** - 一键复制到微信公众号、~~知乎~~、~~掘金~~
+- 📱 **多平台适配** - 微信公众号专门适配，知乎/掘金保留通用 HTML 输出
 - 🖼️ **图片导出** - 将排版内容导出为图片分享
 - 🔌 **开发者友好** - 提供 CLI、REST API 和 MCP 协议集成
 - ⌨️ **快捷操作** - 命令面板 + 全局快捷键，高效操作
@@ -50,7 +50,7 @@ pnpm dlx bmmd lint article.md --fix
 ## 🛠️ 技术栈
 
 - **框架**: [TanStack Start](https://tanstack.com/start) (React 19 + TanStack Router)
-- **构建**: [Vite 7](https://vite.dev)
+- **构建**: [Vite 8](https://vite.dev)
 - **样式**: [Tailwind CSS 4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)
 - **部署**: [Nitro](https://nitro.build) (支持 Cloudflare Workers / Vercel / Netlify / Docker / Alibaba ESA / Tencent EdgeOne 等)
 

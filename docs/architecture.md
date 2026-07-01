@@ -9,13 +9,17 @@
 | 类别     | 技术                                        |
 | -------- | ------------------------------------------- |
 | 框架     | TanStack Start (React 19 + TanStack Router) |
-| 构建     | Vite 7                                      |
+| 构建     | Vite 8                                      |
 | 样式     | Tailwind CSS 4 + shadcn/ui                  |
 | 语言     | TypeScript (严格模式)                       |
 | 状态管理 | Zustand                                     |
 | 包管理   | pnpm                                        |
 | 测试     | Vitest                                      |
 | 校验     | Zod                                         |
+
+### 依赖说明
+
+- `mcp-config` 暂时保留 GitHub 依赖：已检查 npm 版 `mcp-config@0.0.10`，其包内容是交互式 CLI（`main`/`bin` 指向 `dist/index.js`），不提供当前 MCP 配置页使用的 `getClients` / `transformConfig` 兼容导出，也没有兼容的 `mcp-config/src/index.js` 入口。
 
 ---
 
@@ -102,7 +106,7 @@ src/
         ▼               ▼               ▼
     ┌───────┐       ┌───────┐       ┌───────┐
     │ HTML  │       │ WeChat│       │ Zhihu │
-    │ 通用  │       │ 适配器│       │ 适配器│
+    │ 通用  │       │ 适配器│       │ 通用  │
     └───────┘       └───────┘       └───────┘
 ```
 
@@ -112,18 +116,18 @@ src/
 2. **扩展处理** - GFM、Math、Frontmatter 等插件
 3. **转换阶段** - `remark-rehype` 转为 HTML AST
 4. **增强阶段** - 外部链接、GitHub Alert、KaTeX、代码高亮
-5. **平台适配** - 针对微信/知乎/掘金的特殊处理
+5. **平台适配** - 微信使用专门适配；知乎/掘金当前使用通用 HTML 输出
 6. **样式内联** - `juice` 将 CSS 内联到元素
 
 ### 平台适配器
 
-针对不同平台的特殊处理逻辑：
+针对不同平台的输出策略：
 
 | 平台   | 适配内容                                           |
 | ------ | -------------------------------------------------- |
 | WeChat | 链接转脚注、代码空格用 `\u00A0` 保护、表格滚动容器 |
-| Zhihu  | 适配知乎编辑器样式规范                             |
-| Juejin | 适配掘金编辑器样式规范                             |
+| Zhihu  | 当前使用通用 HTML 输出，专门适配后续迭代           |
+| Juejin | 当前使用通用 HTML 输出，专门适配后续迭代           |
 
 ---
 

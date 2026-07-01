@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { render } from './html'
+import { render, renderPreview } from './html'
 
 function getFirstTag(html: string, tagName: string): string {
   return html.match(new RegExp(`<${tagName}[^>]*>`))?.[0] ?? ''
@@ -232,6 +232,36 @@ describe('markdown -> html render (general)', () => {
     expect(html).toContain('<br')
     expect(html).toMatch(/<span[^>]*>第一行<\/span>/)
     expect(html).toMatch(/<span[^>]*>\s*第二行<\/span>/)
+  })
+})
+
+describe('markdown preview rendering', () => {
+  it('returns body HTML and CSS without inlining preview styles', async () => {
+    const preview = await renderPreview({
+      markdown: '## 标题\n\n```js\nconst x = 1\n```',
+      markdownStyle: 'blueprint',
+      codeTheme: 'catppuccin-latte',
+      customCss: '#bm-md h2 { color: red; }',
+    })
+
+    expect(preview.html).toContain('<h2')
+    expect(preview.html).toContain('<pre')
+    expect(preview.html).not.toContain('<section id="bm-md">')
+    expect(preview.html).not.toContain('style="')
+    expect(preview.css).toContain('#bm-md')
+    expect(preview.css).toContain('color: red')
+  })
+
+  it('keeps public render output inline styled for export and copy', async () => {
+    const html = await render({
+      markdown: '## 标题\n\n```js\nconst x = 1\n```',
+      markdownStyle: 'blueprint',
+      codeTheme: 'catppuccin-latte',
+      customCss: '#bm-md h2 { color: red; }',
+    })
+
+    expect(html).toContain('<section id="bm-md"')
+    expect(html).toContain('style="')
   })
 })
 
