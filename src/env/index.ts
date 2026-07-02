@@ -6,7 +6,21 @@
  * - PRIVATE：运行时惰性读取，不会泄露到客户端，仅服务端可用
  */
 
-function getPrivate(key: string): string | undefined {
+export const privateEnvKeys = [
+  'S3_ENDPOINT',
+  'S3_BUCKET',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'S3_REGION',
+  'S3_PUBLIC_BASE_URL',
+  'DC_UPLOAD_URL',
+  'ANALYTICS_SCRIPT_URL',
+  'ANALYTICS_SITE_ID',
+] as const
+
+type PrivateEnvKey = typeof privateEnvKeys[number]
+
+function getPrivate(key: PrivateEnvKey): string | undefined {
   // 优先从 EdgeKV 缓存获取
   if (globalThis.edgeKVCache && key in globalThis.edgeKVCache) {
     return globalThis.edgeKVCache[key] as string

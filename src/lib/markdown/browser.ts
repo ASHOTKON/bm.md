@@ -1,20 +1,12 @@
 import type { RouterClient } from '@orpc/server'
-import type { workerRouter } from './worker-router'
+import type { workerRouter } from './router'
 import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/message-port'
+import { logSafeError } from '@/lib/log-safe-error'
 
 type Client = RouterClient<typeof workerRouter>
 
 let workerPromise: Promise<Client> | null = null
-
-function logSafeError(context: string, error: unknown) {
-  const errorLike = error as { code?: unknown, status?: unknown }
-  console.error(context, {
-    type: error instanceof Error ? error.name : typeof error,
-    code: typeof errorLike.code === 'string' ? errorLike.code : undefined,
-    status: typeof errorLike.status === 'number' ? errorLike.status : undefined,
-  })
-}
 
 function getWorker() {
   return workerPromise ??= (async () => {

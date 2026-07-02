@@ -1,13 +1,23 @@
+import type { MarkdownToolName } from './definitions'
 import { handler as extract } from './extract'
 import { handler as lint } from './lint'
 import { handler as parse } from './parse'
-import { handler as render } from './render'
+import { previewHandler as preview, handler as render } from './render'
+
+const markdownHandlers = {
+  render,
+  parse,
+  extract,
+  lint,
+} satisfies Record<MarkdownToolName, unknown>
 
 export const router = {
+  markdown: markdownHandlers,
+}
+
+export const workerRouter = {
   markdown: {
-    render,
-    parse,
-    extract,
-    lint,
+    ...markdownHandlers,
+    preview,
   },
 }

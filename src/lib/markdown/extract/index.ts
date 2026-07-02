@@ -1,26 +1,14 @@
 import type * as z from 'zod'
-import { ORPCError, os } from '@orpc/server'
+import { createMarkdownHandler, withInternalServerError } from '../rpc'
 import { extractDefinition } from './definition'
 
 export { extractDefinition } from './definition'
 
 export async function extract(input: z.infer<typeof extractDefinition.inputSchema>) {
-  try {
+  return withInternalServerError(async () => {
     const { extract } = await import('./text')
     return extract(input.markdown)
-  }
-  catch (error) {
-    throw new ORPCError('INTERNAL_SERVER_ERROR', error)
-  }
+  })
 }
 
-export const handler = os
-  .route({
-    method: 'POST',
-    path: '/markdown/extract',
-  })
-  .input(extractDefinition.inputSchema)
-  .output(extractDefinition.outputSchema)
-  .handler(async ({ input }) => ({
-    result: await extract(input),
-  }))
+export const handler = createMarkdownHandler(extractDefinition, extract)

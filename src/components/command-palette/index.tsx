@@ -29,10 +29,10 @@ export function CommandPalette() {
         open={open}
         onOpenChange={setOpen}
         title="命令面板"
-        description="搜索命令..."
+        description="搜索命令…"
       >
         <Command>
-          <CommandInput placeholder="搜索命令..." />
+          <CommandInput placeholder="搜索命令…" />
           <CommandList>
             <CommandEmpty>未找到相关命令</CommandEmpty>
             {subMenu === null && <MainMenu actions={actions} setSubMenu={setSubMenu} />}

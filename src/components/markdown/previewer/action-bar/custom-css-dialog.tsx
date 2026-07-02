@@ -23,26 +23,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { trackEvent } from '@/lib/analytics'
 import { usePreviewStore } from '@/stores/preview'
 
-const CSS_EXAMPLES = `/* 修改标题颜色 */
-#bm-md h1 { color: #e74c3c; }
-#bm-md h2 { color: #3498db; }
+const CSS_EXAMPLES = `/* 调整标题间距 */
+#bm-md h1 { margin-bottom: 1rem; }
+#bm-md h2 { margin-top: 1.5rem; }
 
 /* 调整段落行高 */
 #bm-md p { line-height: 1.8; }
 
-/* 自定义引用块样式 */
+/* 自定义引用块边界 */
 #bm-md blockquote {
-  border-left-color: #9b59b6;
-  background: #f8f4fc;
+  border-left-width: 4px;
+  padding-left: 1rem;
 }
 
-/* 调整代码块圆角 */
-#bm-md pre { border-radius: 8px; }
-
-/* 图片居中并添加阴影 */
+/* 图片居中显示 */
 #bm-md img {
   margin: 0 auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }`
 
 const MAX_CSS_LENGTH = 50000
@@ -131,7 +127,7 @@ export function CustomCssDialog() {
                 {' '}
                 字符
               </FieldDescription>
-              {isOverLimit && <FieldError>最多 50,000 字符</FieldError>}
+              {isOverLimit && <FieldError>请删减到 50,000 字符以内再保存</FieldError>}
             </div>
           </Field>
           <Collapsible open={examplesOpen} onOpenChange={setExamplesOpen}>

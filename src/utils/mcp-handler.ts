@@ -1,14 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
-
-function logSafeError(context: string, error: unknown) {
-  const errorLike = error as { code?: unknown, status?: unknown }
-  console.error(context, {
-    type: error instanceof Error ? error.name : typeof error,
-    code: typeof errorLike.code === 'string' ? errorLike.code : undefined,
-    status: typeof errorLike.status === 'number' ? errorLike.status : undefined,
-  })
-}
+import { logSafeError } from '@/lib/log-safe-error'
 
 export async function handleMcpRequest(
   request: Request,

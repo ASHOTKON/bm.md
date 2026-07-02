@@ -1,4 +1,4 @@
-import { env } from '@/env'
+import { privateEnvKeys } from '@/env'
 
 // 预加载 EdgeKV 中的环境变量（如果可用）
 export async function preloadEdgeKVEnv() {
@@ -17,8 +17,7 @@ export async function preloadEdgeKVEnv() {
       const edgeKV = new EdgeKV({ namespace: 'bm-md-env' })
       // 加载所有需要的环境变量
       await Promise.all(
-        Object.keys(env)
-          .filter(key => !key.startsWith('VITE_'))
+        privateEnvKeys
           .map(async (key) => {
             const value = await edgeKV.get(key, { type: 'text' }).catch(() => null)
             if (value) {

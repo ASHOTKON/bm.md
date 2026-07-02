@@ -1,9 +1,8 @@
+import type * as z from 'zod'
+import type { MarkdownTool } from './tools'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { name, version } from '@/package.json'
-import { extract, extractDefinition } from './extract'
-import { lint, lintDefinition } from './lint'
-import { parse, parseDefinition } from './parse'
-import { render, renderDefinition } from './render'
+import { markdownTools } from './tools'
 
 function formatToolResult(result: string) {
   const output = { result }
@@ -13,32 +12,37 @@ function formatToolResult(result: string) {
   }
 }
 
+interface McpToolConfig {
+  title: string
+  description: string
+  inputSchema: z.ZodType
+  outputSchema: z.ZodType
+}
+
+function registerMarkdownTool(
+  server: McpServer,
+  tool: MarkdownTool,
+) {
+  const config: McpToolConfig = {
+    title: tool.definition.title,
+    description: tool.definition.description,
+    inputSchema: tool.definition.inputSchema,
+    outputSchema: tool.definition.outputSchema,
+  }
+
+  server.registerTool(
+    tool.definition.name,
+    config,
+    async input => formatToolResult(await tool.run(input as Record<string, unknown>)),
+  )
+}
+
 export function createMarkdownMcpServer() {
   const server = new McpServer({ name, version })
 
-  server.registerTool(
-    renderDefinition.name,
-    renderDefinition,
-    async input => formatToolResult(await render(input)),
-  )
-
-  server.registerTool(
-    parseDefinition.name,
-    parseDefinition,
-    async input => formatToolResult(await parse(input)),
-  )
-
-  server.registerTool(
-    extractDefinition.name,
-    extractDefinition,
-    async input => formatToolResult(await extract(input)),
-  )
-
-  server.registerTool(
-    lintDefinition.name,
-    lintDefinition,
-    async input => formatToolResult(await lint(input)),
-  )
+  for (const tool of markdownTools) {
+    registerMarkdownTool(server, tool)
+  }
 
   return server
 }

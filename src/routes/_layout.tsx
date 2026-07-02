@@ -29,11 +29,11 @@ function App() {
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize="50%" minSize="512px">
-            <MarkdownPreviewer></MarkdownPreviewer>
+            <MarkdownPreviewer />
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>
-      <FooterBar></FooterBar>
+      <FooterBar />
       <ClientOnly>
         <CommandPalette />
       </ClientOnly>

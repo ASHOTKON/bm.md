@@ -16,7 +16,7 @@ const infographicThemeSchema = z.enum(infographicThemeIds)
 const infographicPaletteSchema = z.enum(infographicPaletteIds)
 
 export const renderDefinition = {
-  name: 'render',
+  name: 'render' as const,
   title: '渲染 Markdown 为 HTML',
   description: '将 Markdown 内容渲染为适用于不同平台的 HTML 片段。支持 GFM 语法、数学公式（KaTeX）、代码高亮，并自动将 CSS 样式内联到元素上，确保在微信公众号等富文本编辑器中正确显示。',
   inputSchema: z.object({

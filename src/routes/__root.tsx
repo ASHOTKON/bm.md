@@ -16,7 +16,7 @@ import appCss from '../styles.css?url'
 // Google Fonts URL - 仅加载 Logo 使用的字符
 const fontUrl = `https://fonts.googleapis.cn/css2?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
 
-const Devtools = import.meta.env.DEV
+const Devtools = env.DEV
   ? lazy(async () => {
       const [{ TanStackDevtools }, { TanStackRouterDevtoolsPanel }] = await Promise.all([
         import('@tanstack/react-devtools'),

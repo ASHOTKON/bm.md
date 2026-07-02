@@ -5,23 +5,14 @@ import type { CliTool } from './core'
 import process from 'node:process'
 import { cac } from 'cac'
 import { description, version } from '../../package.json'
-import { extractDefinition, lintDefinition, parseDefinition, renderDefinition } from '../lib/markdown/definitions'
-import { extract } from '../lib/markdown/extract/text'
-import { lint } from '../lib/markdown/lint/markdown'
-import { parse } from '../lib/markdown/parse/html'
-import { render } from '../lib/markdown/render/html'
-import { defineCliTool, formatError, handleCommand, registerOption } from './core'
+import { markdownTools } from '../lib/markdown/tools'
+import { formatError, handleCommand, registerOption } from './core'
 
 type CommandAction = () => Promise<void>
 
 const cli = cac('bmmd')
 
-const cliTools = [
-  defineCliTool(renderDefinition, render),
-  defineCliTool(parseDefinition, input => parse(input.html)),
-  defineCliTool(extractDefinition, input => extract(input.markdown)),
-  defineCliTool(lintDefinition, input => lint(input.markdown)),
-] satisfies CliTool[]
+const cliTools = markdownTools satisfies readonly CliTool[]
 
 function run(action: CommandAction) {
   action().catch((error: unknown) => {
