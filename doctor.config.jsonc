@@ -5,6 +5,7 @@
       "react-doctor/require-pnpm-hardening"
     ],
     "files": [
+      ".output/**",
       "bin/**",
       "preset/**",
       "src/cli/index.ts",
