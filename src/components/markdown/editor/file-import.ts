@@ -1,7 +1,13 @@
 import { EditorView, ViewPlugin } from '@codemirror/view'
 import { toast } from 'sonner'
-import { importFilesAsNewTabs, isImageFile, isTextFile } from '@/lib/file-importer'
-import { uploadImage } from '@/services/upload'
+import {
+  classifyFile,
+  importFilesAsNewTabs,
+  isImageFile,
+  isTextFile,
+  parseFileToMarkdown,
+} from '@/lib/file-importer'
+import { uploadImage } from '@/lib/upload-image'
 
 let currentEditorView: EditorView | null = null
 
@@ -66,50 +72,34 @@ export async function importFilesToEditor(
   let currentInsertPos = insertPos ?? selection.from
 
   for (const file of files) {
-    if (file.type === 'text/html') {
+    const fileKind = classifyFile(file)
+    if (fileKind !== 'unsupported') {
       try {
         // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 导入会立即修改编辑器内容，必须按用户文件顺序处理。
-        const html = await file.text()
-        const { markdown } = await import('@/lib/markdown/browser')
-        const { result: md } = await markdown.parse({ html })
+        const parsed = await parseFileToMarkdown(file)
+        if (!parsed) {
+          continue
+        }
         const from = replaceAll ? 0 : (insertPos ?? selection.from)
         const to = replaceAll ? view.state.doc.length : (insertPos ?? selection.to)
         view.dispatch({
-          changes: { from, to, insert: md },
-          selection: { anchor: from + md.length },
+          changes: { from, to, insert: parsed.content },
+          selection: { anchor: from + parsed.content.length },
         })
-        toast.success(`HTML 导入成功: ${file.name}`)
+        const label = parsed.kind === 'html' ? 'HTML' : 'Markdown'
+        toast.success(`${label} 导入成功: ${file.name}`)
         break
       }
       catch (error) {
-        console.error('HTML parse error:', error)
-        toast.error(`HTML 解析失败: ${file.name}`)
-      }
-      continue
-    }
-
-    if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
-      try {
-        // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 导入会立即修改编辑器内容，必须按用户文件顺序处理。
-        const md = await file.text()
-        const from = replaceAll ? 0 : (insertPos ?? selection.from)
-        const to = replaceAll ? view.state.doc.length : (insertPos ?? selection.to)
-        view.dispatch({
-          changes: { from, to, insert: md },
-          selection: { anchor: from + md.length },
-        })
-        toast.success(`Markdown 导入成功: ${file.name}`)
-        break
-      }
-      catch (error) {
-        console.error('Markdown read error:', error)
-        toast.error(`Markdown 读取失败: ${file.name}`)
+        const label = fileKind === 'html' ? 'HTML 解析' : 'Markdown 读取'
+        console.error(`${label} error:`, error)
+        toast.error(`${label}失败: ${file.name}`)
       }
       continue
     }
 
     if (file.type.startsWith('image/')) {
-      const toastId = toast.loading(`正在上传 ${file.name}...`)
+      const toastId = toast.loading(`正在上传 ${file.name}…`)
       try {
         const formData = new FormData()
         formData.append('file', file)

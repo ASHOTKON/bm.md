@@ -19,7 +19,10 @@ import {
 import { useCommandPaletteActions } from './use-command-palette-actions'
 
 export function CommandPalette() {
-  const { open, setOpen, subMenu, setSubMenu } = useCommandPaletteStore()
+  const open = useCommandPaletteStore(state => state.open)
+  const setOpen = useCommandPaletteStore(state => state.setOpen)
+  const subMenu = useCommandPaletteStore(state => state.subMenu)
+  const setSubMenu = useCommandPaletteStore(state => state.setSubMenu)
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const actions = useCommandPaletteActions(setResetDialogOpen)
 

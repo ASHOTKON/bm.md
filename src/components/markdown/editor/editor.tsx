@@ -8,7 +8,8 @@ import { createEditorExtensions } from './editor-extensions'
 
 export default function CodeMirrorEditor() {
   const content = useFilesStore(state => state.currentContent)
-  const setContent = useFilesStore(state => state.setCurrentContent)
+  const contentFileId = useFilesStore(state => state.contentFileId)
+  const setFileContent = useFilesStore(state => state.setFileContent)
   const enableScrollSync = useEditorStore(state => state.enableScrollSync)
   const { theme } = useTheme()
 
@@ -26,7 +27,7 @@ export default function CodeMirrorEditor() {
       height="100%"
       theme={editorTheme}
       extensions={extensions}
-      onChange={setContent}
+      onChange={value => contentFileId && setFileContent(contentFileId, value)}
       className="size-full"
       basicSetup={{
         autocompletion: false,

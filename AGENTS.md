@@ -10,11 +10,11 @@
 
 bm.md 是 Markdown 排版工具，同时发布为：
 
-- **Web 应用**：TanStack Start (React 19) + Vite 7 + Tailwind 4 + shadcn/ui，部署到 Cloudflare Workers / Vercel / 阿里云 ESA / 腾讯 EdgeOne 等（通过 Nitro）。
+- **Web 应用**：TanStack Start (React 19) + Vite 8 + Tailwind 4 + shadcn/ui，部署到 Cloudflare Workers / Vercel / 阿里云 ESA / 腾讯 EdgeOne 等（通过 Nitro）。
 - **CLI**：`bmmd`，入口 `src/cli/index.ts`，由 `tsdown` 打包到 `bin/bmmd.mjs` 后通过 npm 发布。
 - **REST API + MCP Server**：通过 oRPC 暴露 Markdown 处理能力。
 
-> ⚠️ **核心架构约定**：`render` / `parse` / `extract` / `lint` 四个 Markdown 工具的输入输出 Schema 集中在 `src/lib/markdown/definitions.ts`。CLI、API 路由 (`src/routes/api.$.ts`)、MCP 路由 (`src/routes/mcp.ts`) 都从此文件复用 schema 与处理函数。**新增/修改工具时必须先改 definitions.ts**，否则三端会失去同步。
+> ⚠️ **核心架构约定**：`src/lib/markdown/definitions.ts` 中的 `markdownTools` 是 `render` / `parse` / `extract` / `lint` 的唯一 registry，集中绑定 schema、元信息与执行函数。CLI、API 路由 (`src/routes/api.$.ts`) 和 MCP 路由 (`src/routes/mcp.ts`) 均从 registry 派生。**新增/修改工具时必须先改 definitions.ts**，否则三端会失去同步。
 
 ## 常用命令
 
@@ -50,7 +50,7 @@ src/
 ├── env/             # 环境变量统一入口（VITE_* 客户端可见，其余仅 server getter）
 ├── lib/
 │   ├── markdown/
-│   │   ├── definitions.ts   # ⭐ CLI / API / MCP 共享的工具定义（schema + 元信息）
+│   │   ├── definitions.ts   # ⭐ CLI / API / MCP 共享的唯一 markdownTools registry
 │   │   ├── render|parse|extract|lint/   # 各工具实现
 │   │   ├── worker.ts        # Web Worker 入口
 │   │   └── api.ts/router.ts # oRPC 路由
@@ -96,7 +96,7 @@ preset/              # Nitro 自定义 preset（aliyun-esa / tencent-edgeone）
 
 - 2 空格、单引号、无分号、多行尾随逗号、Stroustrup 大括号风格。
 - 导入顺序：`node:` 内置 → 外部依赖 → `@/` 内部 → 相对路径（eslint 自动排序）。
-- TypeScript：`import type` 导入纯类型；**禁用 `any`**；ES2022 + `strictNullChecks`。
+- TypeScript：`import type` 导入纯类型；**禁用 `any`**；ES2022 + `strict: true`。
 - React 组件 PascalCase，文件 kebab-case；hooks `use` 前缀。
 - 已启用 `babel-plugin-react-compiler`，**不要手动加 `useMemo` / `useCallback`** 除非 profiler 证明必要。
 - `console.info` / `warn` / `error` 允许，`console.log` 触发 ESLint 警告。
@@ -119,6 +119,8 @@ export const useEditorStore = create<EditorState>()(
 ```
 
 Store 名称必须以 `bm.md.` 开头，否则会与现有 IndexedDB / localStorage 冲突。
+
+`filesStore` 是例外：它不使用 Zustand persist。文件 catalog 与正文由 `src/lib/file-storage.ts` 在 IndexedDB `bm.md` v2 中事务化管理；活动文件仅写入 sessionStorage，localStorage `bm.md.files.signal` 只用于跨标签失效通知。修改文件状态时不要重新引入全量 localStorage 快照同步。
 
 ## 路由
 

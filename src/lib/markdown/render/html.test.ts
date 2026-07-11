@@ -145,6 +145,19 @@ describe('markdown -> html render (general)', () => {
     expect(html).not.toContain('[2]')
   })
 
+  it('does not create external-link footnotes for mailto and tel links', async () => {
+    const html = await render({
+      markdown: '[邮件](mailto:test@example.com) [电话](tel:123)',
+      enableFootnoteLinks: true,
+      platform: 'html',
+    })
+
+    expect(html).toContain('href="mailto:test@example.com"')
+    expect(html).toContain('href="tel:123"')
+    expect(html).not.toContain('footnote-ref')
+    expect(html).not.toContain('References')
+  })
+
   it('adds target blank when openLinksInNewWindow is true', async () => {
     const html = await render({
       markdown: '[外链](https://example.com)',

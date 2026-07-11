@@ -19,7 +19,7 @@ interface CopyButtonProps {
 }
 
 export function CopyButton({ platform }: CopyButtonProps) {
-  const { getHtml, isLoading } = usePlatformCopy(platform)
+  const { getHtml, isLoading, isReady } = usePlatformCopy(platform)
   const config = platformConfig[platform]
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
@@ -39,7 +39,7 @@ export function CopyButton({ platform }: CopyButtonProps) {
             size="icon"
             aria-label={config.label}
             onClick={onCopyClick}
-            disabled={isLoading}
+            disabled={isLoading || !isReady}
           >
             {platformIcons[platform]}
           </Button>

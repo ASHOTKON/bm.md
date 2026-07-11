@@ -91,7 +91,7 @@ function EditorSettingsGroup({ actions }: { actions: CommandPaletteActions }) {
   return (
     <CommandGroup heading="编辑器设置">
       {editorSettingsItems.map((item) => {
-        const isChecked = actions.editorStore[item.storeKey]
+        const isChecked = actions.isSettingEnabled(item.storeKey)
         return (
           <CommandItem
             key={item.id}
@@ -100,6 +100,7 @@ function EditorSettingsGroup({ actions }: { actions: CommandPaletteActions }) {
           >
             <item.Icon className="size-4" />
             {item.label}
+            <span className="sr-only">{isChecked ? '，已启用' : '，已关闭'}</span>
           </CommandItem>
         )
       })}
@@ -149,10 +150,12 @@ function AppearanceGroup({ actions, setSubMenu }: MainMenuProps) {
       <CommandItem onSelect={actions.handleMobileView} data-checked={actions.isMobileView}>
         <MobileViewIcon className="size-4" />
         {viewModeConfig.mobile.label}
+        {actions.isMobileView ? <span className="sr-only">，当前视图</span> : null}
       </CommandItem>
       <CommandItem onSelect={actions.handleDesktopView} data-checked={actions.isDesktopView}>
         <DesktopViewIcon className="size-4" />
         {viewModeConfig.desktop.label}
+        {actions.isDesktopView ? <span className="sr-only">，当前视图</span> : null}
       </CommandItem>
       <CommandItem onSelect={() => setSubMenu('markdownStyle')}>
         <Palette className="size-4" />

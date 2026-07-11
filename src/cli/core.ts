@@ -1,26 +1,21 @@
-import type * as z from 'zod'
-import type { CliOptionDefinition, MarkdownToolDefinition } from '../lib/markdown/definitions'
+import type { CliDefinition, CliOptionDefinition, MarkdownTool, MarkdownToolName } from '../lib/markdown/definitions'
 
 import { readFile, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 
 import { ZodError } from 'zod'
 
+import { markdownTools, runMarkdownTool } from '../lib/markdown/definitions'
+
 export type CliOptions = Record<string, unknown>
 
-export interface CliTool {
-  definition: MarkdownToolDefinition
-  run: (input: Record<string, unknown>) => Promise<string>
-}
+export type CliTool = MarkdownTool
 
-export function defineCliTool<TSchema extends z.ZodType>(
-  definition: MarkdownToolDefinition & { inputSchema: TSchema },
-  handler: (input: z.output<TSchema>) => Promise<string>,
-): CliTool {
-  return {
-    definition,
-    run: input => handler(definition.inputSchema.parse(input)),
-  }
+export const cliTools = markdownTools satisfies readonly CliTool[]
+
+interface CliInputDefinition {
+  name: MarkdownToolName
+  cli: CliDefinition
 }
 
 export function formatError(error: unknown): string {
@@ -33,7 +28,7 @@ export function formatError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export function registerOption(command: { option: (syntax: string, description?: string) => unknown }, option: CliOptionDefinition) {
+export function registerOption(command: { option: (syntax: string, description: string) => unknown }, option: CliOptionDefinition) {
   const flag = option.flag ?? option.name.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)
   const syntax = option.type === 'boolean'
     ? `--${flag}`
@@ -74,7 +69,7 @@ async function writeOutput(output: string, file?: string) {
   process.stdout.write(output)
 }
 
-export async function buildInput(definition: MarkdownToolDefinition, file: string | undefined, options: CliOptions): Promise<Record<string, unknown>> {
+export async function buildInput(definition: CliInputDefinition, file: string | undefined, options: CliOptions): Promise<Record<string, unknown>> {
   const input: Record<string, unknown> = {
     [definition.cli.inputField]: await readInput(file),
   }
@@ -111,7 +106,7 @@ export async function handleCommand(tool: CliTool, file: string | undefined, opt
     : undefined
   const fix = options.fix === true
 
-  if (tool.definition.name === 'lint' && fix) {
+  if (tool.name === 'lint' && fix) {
     if (!file) {
       throw new Error('--fix 需要提供输入文件')
     }
@@ -121,10 +116,11 @@ export async function handleCommand(tool: CliTool, file: string | undefined, opt
     }
   }
 
-  const input = await buildInput(tool.definition, file, options)
-  const result = await tool.run(input)
+  const rawInput = await buildInput(tool, file, options)
+  const input = tool.inputSchema.parse(rawInput)
+  const result = await runMarkdownTool(tool, input)
 
-  if (tool.definition.name === 'lint' && fix) {
+  if (tool.name === 'lint' && fix) {
     await writeOutput(result, file)
     return
   }

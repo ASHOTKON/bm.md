@@ -1,8 +1,9 @@
+import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type * as z from 'zod'
-import type { MarkdownTool } from './tools'
+import type { MarkdownTool } from './definitions'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { name, version } from '@/package.json'
-import { markdownTools } from './tools'
+import { markdownTools, runMarkdownTool } from './definitions'
 
 function formatToolResult(result: string) {
   const output = { result }
@@ -12,28 +13,22 @@ function formatToolResult(result: string) {
   }
 }
 
-interface McpToolConfig {
-  title: string
-  description: string
-  inputSchema: z.ZodType
-  outputSchema: z.ZodType
-}
-
-function registerMarkdownTool(
+function registerMarkdownTool<TTool extends MarkdownTool>(
   server: McpServer,
-  tool: MarkdownTool,
+  tool: TTool,
 ) {
-  const config: McpToolConfig = {
-    title: tool.definition.title,
-    description: tool.definition.description,
-    inputSchema: tool.definition.inputSchema,
-    outputSchema: tool.definition.outputSchema,
+  const config = {
+    title: tool.title,
+    description: tool.description,
+    inputSchema: tool.inputSchema,
+    outputSchema: tool.outputSchema,
   }
 
-  server.registerTool(
-    tool.definition.name,
+  server.registerTool<TTool['outputSchema'], TTool['inputSchema']>(
+    tool.name,
     config,
-    async input => formatToolResult(await tool.run(input as Record<string, unknown>)),
+    (async (input: z.output<TTool['inputSchema']>) =>
+      formatToolResult(await runMarkdownTool(tool, input))) as unknown as ToolCallback<TTool['inputSchema']>,
   )
 }
 

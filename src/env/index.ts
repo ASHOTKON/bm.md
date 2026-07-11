@@ -23,7 +23,7 @@ type PrivateEnvKey = typeof privateEnvKeys[number]
 function getPrivate(key: PrivateEnvKey): string | undefined {
   // 优先从 EdgeKV 缓存获取
   if (globalThis.edgeKVCache && key in globalThis.edgeKVCache) {
-    return globalThis.edgeKVCache[key] as string
+    return globalThis.edgeKVCache[key]
   }
   // 从 process.env 获取
   if (typeof process !== 'undefined' && process.env?.[key]) {

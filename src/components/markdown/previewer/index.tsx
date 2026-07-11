@@ -1,7 +1,8 @@
 import { ClientOnly } from '@tanstack/react-router'
-import { lazy, useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
+import { MarkdownLoadingFallback } from '@/components/markdown/loading-fallback'
+import { isFileContentReady, useFilesStore } from '@/stores/files'
 import { PREVIEW_WIDTH_MOBILE, usePreviewStore } from '@/stores/preview'
-import { PreviewerFallback } from './fallback'
 import MarkdownPreviewerSidebar from './sidebar'
 
 const MarkdownRender = lazy(() => import('./render'))
@@ -10,6 +11,7 @@ const MOBILE_BREAKPOINT = 600
 
 export default function MarkdownPreviewer() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const isReady = useFilesStore(isFileContentReady)
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const userPreferredWidth = usePreviewStore(state => state.userPreferredWidth)
   const setPreviewWidth = usePreviewStore(state => state.setPreviewWidth)
@@ -44,9 +46,15 @@ export default function MarkdownPreviewer() {
         ref={containerRef}
         className="flex flex-1 items-center justify-center p-4"
       >
-        <ClientOnly fallback={<PreviewerFallback />}>
-          <MarkdownRender />
-        </ClientOnly>
+        {isReady
+          ? (
+              <ClientOnly fallback={<MarkdownLoadingFallback label="加载预览…" />}>
+                <Suspense fallback={<MarkdownLoadingFallback label="加载预览…" />}>
+                  <MarkdownRender />
+                </Suspense>
+              </ClientOnly>
+            )
+          : <MarkdownLoadingFallback label="加载预览…" />}
       </div>
       <MarkdownPreviewerSidebar />
     </div>

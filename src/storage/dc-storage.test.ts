@@ -15,12 +15,16 @@ describe('dc storage', () => {
 
     const storage = new DCStorage()
     const result = await storage.upload({
-      file: new Blob(['image'], { type: 'image/png' }),
-      filename: 'avatar.png',
+      file: new Blob(['image'], { type: 'application/octet-stream' }),
+      extension: 'png',
       contentType: 'image/png',
     })
 
     expect(fetchMock).toHaveBeenCalledWith('https://upload.example.com', expect.objectContaining({ method: 'POST' }))
+    const request = fetchMock.mock.calls[0]?.[1]
+    const uploadedFile = (request?.body as FormData).get('image') as File
+    expect(uploadedFile.name).toBe('image.png')
+    expect(uploadedFile.type).toBe('image/png')
     expect(result.url).toBe('https://img.example.com/a.png')
   })
 
@@ -29,7 +33,7 @@ describe('dc storage', () => {
 
     await expect(new DCStorage().upload({
       file: new Blob(['image'], { type: 'image/png' }),
-      filename: 'avatar.png',
+      extension: 'png',
       contentType: 'image/png',
     })).rejects.toMatchObject({ provider: 'dc' })
   })
@@ -39,7 +43,7 @@ describe('dc storage', () => {
 
     await expect(new DCStorage().upload({
       file: new Blob(['image'], { type: 'image/png' }),
-      filename: 'avatar.png',
+      extension: 'png',
       contentType: 'image/png',
     })).rejects.toMatchObject({ provider: 'dc' })
   })

@@ -11,28 +11,40 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { editorCommandConfig } from '@/config'
 import { copyImage, exportImage, exportPdf, printPreview } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
+import { useIsPreviewReady } from '../preview-ready'
+import { runPreviewAction } from './preview-action-guard'
 
 async function onCopyClick() {
-  trackEvent('copy', 'image', 'button')
-  await copyImage()
+  await runPreviewAction(async () => {
+    trackEvent('copy', 'image', 'button')
+    await copyImage()
+  })
 }
 
 async function onExportClick() {
-  trackEvent('export', 'image', 'button')
-  await exportImage()
+  await runPreviewAction(async () => {
+    trackEvent('export', 'image', 'button')
+    await exportImage()
+  })
 }
 
 async function onExportPdfClick() {
-  trackEvent('export', 'pdf', 'button')
-  await exportPdf()
+  await runPreviewAction(async () => {
+    trackEvent('export', 'pdf', 'button')
+    await exportPdf()
+  })
 }
 
-function onPrintClick() {
-  trackEvent('export', 'print', 'button')
-  printPreview()
+async function onPrintClick() {
+  await runPreviewAction(() => {
+    trackEvent('export', 'print', 'button')
+    printPreview()
+  })
 }
 
 export function ExportButton() {
+  const isReady = useIsPreviewReady()
+
   return (
     <DropdownMenu>
       <Tooltip>
@@ -40,7 +52,7 @@ export function ExportButton() {
           render={(
             <DropdownMenuTrigger
               render={(
-                <Button variant="ghost" size="icon" aria-label="导出">
+                <Button variant="ghost" size="icon" aria-label="导出" disabled={!isReady}>
                   <Download className="size-4" />
                 </Button>
               )}
@@ -50,20 +62,20 @@ export function ExportButton() {
         <TooltipContent>导出</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem className="cursor-pointer" onClick={onCopyClick}>
+        <DropdownMenuItem className="cursor-pointer" disabled={!isReady} onClick={onCopyClick}>
           <ClipboardCopy className="size-4" />
           {editorCommandConfig.copyImage.label}
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={onExportClick}>
+        <DropdownMenuItem className="cursor-pointer" disabled={!isReady} onClick={onExportClick}>
           <ImageDown className="size-4" />
           {editorCommandConfig.exportImage.label}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={onExportPdfClick}>
+        <DropdownMenuItem className="cursor-pointer" disabled={!isReady} onClick={onExportPdfClick}>
           <FileText className="size-4" />
           {editorCommandConfig.exportPdf.label}
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={onPrintClick}>
+        <DropdownMenuItem className="cursor-pointer" disabled={!isReady} onClick={onPrintClick}>
           <Printer className="size-4" />
           {editorCommandConfig.printPreview.label}
         </DropdownMenuItem>

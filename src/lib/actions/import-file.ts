@@ -1,7 +1,8 @@
 import { toast } from 'sonner'
 import { importFilesAsNewTabs, isImageFile } from '@/lib/file-importer'
+import { MARKDOWN_FILE_ACCEPT } from '@/lib/markdown-file'
 
-const ACCEPT_TYPES = 'text/html,text/markdown,.md,image/*'
+const ACCEPT_TYPES = `text/html,text/markdown,${MARKDOWN_FILE_ACCEPT},image/*`
 
 function triggerImportDialog(): Promise<File[]> {
   return new Promise((resolve) => {

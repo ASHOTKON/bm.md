@@ -4,6 +4,7 @@ import type { PlatformAdapter } from './types'
 
 import { visit } from 'unist-util-visit'
 import { getTextContent, hasChildren, isElement } from '@/lib/markdown/hast'
+import { createFootnoteReference, createFootnoteSection } from '../plugins/footnote-hast'
 
 interface FootnoteLink {
   id: number
@@ -247,55 +248,32 @@ const rehypeWechatFootnoteLinks: Plugin<[WechatFootnoteLinkOptions?], Root> = (o
         links.push({ id, href, text: extractLinkText(node) })
       }
 
-      parent.children.splice(index + 1, 0, {
-        type: 'element',
-        tagName: 'sup',
-        properties: { className: ['footnote-ref'] },
-        children: [{ type: 'text', value: `[${id}]` }],
-      })
+      parent.children.splice(index + 1, 0, createFootnoteReference(id))
     })
 
     if (links.length === 0) {
       return
     }
 
-    tree.children.push({
+    tree.children.push(createFootnoteSection(referenceTitle, links.map(link => ({
       type: 'element',
-      tagName: 'section',
-      properties: { className: ['footnotes'], dataFootnotes: '' },
+      tagName: 'li',
+      properties: {},
       children: [
         {
           type: 'element',
-          tagName: 'h4',
+          tagName: 'span',
           properties: {},
-          children: [{ type: 'text', value: referenceTitle }],
+          children: [{ type: 'text', value: `${link.text || link.href}: ` }],
         },
         {
           type: 'element',
-          tagName: 'ol',
-          properties: {},
-          children: links.map(link => ({
-            type: 'element',
-            tagName: 'li',
-            properties: {},
-            children: [
-              {
-                type: 'element',
-                tagName: 'span',
-                properties: {},
-                children: [{ type: 'text', value: `${link.text || link.href}: ` }],
-              },
-              {
-                type: 'element',
-                tagName: 'span',
-                properties: { style: 'word-break: break-all;' },
-                children: [{ type: 'text', value: link.href }],
-              },
-            ],
-          } as Element)),
+          tagName: 'span',
+          properties: { style: 'word-break: break-all;' },
+          children: [{ type: 'text', value: link.href }],
         },
       ],
-    })
+    } as Element))))
   }
 }
 

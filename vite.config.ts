@@ -7,15 +7,15 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
-// import { analyzer } from 'vite-bundle-analyzer'
 import { VitePWA } from 'vite-plugin-pwa'
 import { name } from './package.json'
-import { cssRawMinifyPlugin, fixNitroInlineDynamicImports, htmlRawMinifyPlugin, markdownPlugin } from './scripts/vite'
+import { cssRawMinifyPlugin, fixNitroInlineDynamicImports, markdownPlugin } from './scripts/vite'
+import { resolvePlatformConfig } from './scripts/vite/platform'
 import { appConfig } from './src/config/app'
+import { MARKDOWN_FILE_EXTENSIONS } from './src/lib/markdown-file'
 
 const require = createRequire(import.meta.url)
-const isAliyunESA = Boolean(env.AliUid)
-const isTencentEdgeOne = env.HOME === '/dev/shm/home' && env.TMPDIR === '/dev/shm/tmp'
+const platformConfig = resolvePlatformConfig(env)
 const codemirrorPackages = [
   '@codemirror/autocomplete',
   '@codemirror/commands',
@@ -28,30 +28,18 @@ const codemirrorPackages = [
   '@codemirror/view',
 ]
 
-let customPreset: string | undefined
-if (isAliyunESA) {
-  // 阿里云 ESA
-  customPreset = './preset/aliyun-esa/nitro.config.ts'
-}
-else if (isTencentEdgeOne) {
-  // 腾讯云 EdgeOne
-  customPreset = './preset/tencent-edgeone/nitro.config.ts'
-}
-
-console.info('Using Nitro Preset:', customPreset || 'auto')
+console.info('Using Nitro Preset:', platformConfig.nitroPreset || 'auto')
 
 const config = defineConfig({
   plugins: [
     fixNitroInlineDynamicImports(),
-    // analyzer(),
     cssRawMinifyPlugin(),
-    htmlRawMinifyPlugin(),
     markdownPlugin(),
     devtools(),
     ...(
       env.NODE_ENV !== 'test'
         ? [nitro({
-            preset: customPreset,
+            preset: platformConfig.nitroPreset,
             cloudflare: {
               wrangler: {
                 name,
@@ -69,7 +57,7 @@ const config = defineConfig({
     tailwindcss(),
     tanstackStart({
       prerender: {
-        enabled: isAliyunESA,
+        enabled: platformConfig.prerender,
         filter: ({ path }) =>
           path === '/'
           || path === '/about'
@@ -83,7 +71,7 @@ const config = defineConfig({
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
-      outDir: isAliyunESA ? 'dist/client' : '.output/public',
+      outDir: platformConfig.pwaOutDir,
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       manifest: {
@@ -106,7 +94,7 @@ const config = defineConfig({
           {
             action: '/',
             accept: {
-              'text/markdown': ['.md', '.markdown', '.mdown', '.mkd'],
+              'text/markdown': [...MARKDOWN_FILE_EXTENSIONS],
             },
           },
         ],

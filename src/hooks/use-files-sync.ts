@@ -1,50 +1,63 @@
 import { useEffect } from 'react'
+
+import { FILES_SIGNAL_KEY, parseFilesSignal } from '@/lib/files-sync'
 import { useFilesStore } from '@/stores/files'
-
-const STORAGE_KEY = 'bm.md.files'
-
-interface PersistedState {
-  state: {
-    files: Array<{ id: string, name: string, createdAt: number, updatedAt: number }>
-    activeFileId: string | null
-  }
-}
-
-function getFilesSnapshotKey(files: PersistedState['state']['files']): string {
-  return files.map(f => `${f.id}:${f.name}:${f.updatedAt}`).join('|')
-}
 
 export function useFilesSync() {
   useEffect(() => {
-    const handleStorageChange = async (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY || !e.newValue) {
+    let active = true
+    let inFlight = false
+    let pending = false
+
+    const requestSync = () => {
+      if (inFlight) {
+        pending = true
         return
       }
+      inFlight = true
+      void useFilesStore.getState().syncExternalChanges().catch(() => undefined).finally(() => {
+        if (!active) {
+          return
+        }
+        inFlight = false
+        if (pending) {
+          pending = false
+          requestSync()
+        }
+      })
+    }
 
-      let remote: PersistedState['state']
-      try {
-        const parsed = JSON.parse(e.newValue) as PersistedState
-        remote = parsed.state
-      }
-      catch {
-        console.error('解析远程状态失败')
-        return
-      }
-
-      const local = useFilesStore.getState()
-
-      const filesChanged = getFilesSnapshotKey(remote.files) !== getFilesSnapshotKey(local.files)
-      if (filesChanged) {
-        useFilesStore.setState({ files: remote.files })
-      }
-
-      const currentFileExists = remote.files.some(f => f.id === local.activeFileId)
-      if (!currentFileExists && remote.files.length > 0) {
-        await useFilesStore.getState().switchFile(remote.files[0].id)
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === FILES_SIGNAL_KEY && parseFilesSignal(event.newValue)) {
+        requestSync()
       }
     }
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        requestSync()
+      }
+      else if (document.visibilityState === 'hidden') {
+        void useFilesStore.getState().flushPendingSaves().catch(() => undefined)
+      }
+    }
+
+    const handlePageHide = () => {
+      void useFilesStore.getState().flushPendingSaves().catch(() => undefined)
+    }
+
     window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+    window.addEventListener('focus', requestSync)
+    window.addEventListener('pagehide', handlePageHide)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    requestSync()
+
+    return () => {
+      active = false
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('focus', requestSync)
+      window.removeEventListener('pagehide', handlePageHide)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 }

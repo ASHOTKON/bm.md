@@ -11,7 +11,7 @@
 | 框架     | TanStack Start (React 19 + TanStack Router) |
 | 构建     | Vite 8                                      |
 | 样式     | Tailwind CSS 4 + shadcn/ui                  |
-| 语言     | TypeScript (严格模式)                       |
+| 语言     | TypeScript (`strict: true`)                 |
 | 状态管理 | Zustand                                     |
 | 包管理   | pnpm                                        |
 | 测试     | Vitest                                      |
@@ -48,15 +48,18 @@ src/
 ├── lib/                 # 核心业务逻辑
 │   ├── actions/         # 用户操作（导入/导出/复制）
 │   ├── file-storage.ts  # IndexedDB 文件存储
+│   ├── file-importer.ts # 文件分类、解析与标签创建
+│   ├── upload-image.ts  # 图片上传客户端边界（ofetch + Zod）
 │   └── markdown/        # Markdown 处理管道
-│       ├── definitions.ts # 工具定义统一出口
+│       ├── definitions.ts # 唯一 markdownTools registry
 │       ├── extract/     # 文本提取
 │       ├── lint/        # 格式校验
 │       ├── parse/       # HTML → Markdown
 │       ├── render/      # Markdown → HTML
+│       ├── router.ts    # 从 registry 派生 API / Worker procedure
+│       ├── mcp.ts       # 从 registry 注册 MCP 工具
 │       └── types/       # 工具与 CLI 定义类型
 ├── routes/              # TanStack Router 路由
-├── services/            # 业务服务层
 ├── storage/             # 云端存储抽象层
 │   ├── index.ts         # 存储入口（自动选择 S3/DC）
 │   ├── s3-storage.ts    # S3 兼容存储
@@ -79,36 +82,9 @@ src/
 
 ### Markdown 处理管道
 
-基于 unified 生态系统构建，支持多种处理流程：
+`src/lib/markdown/definitions.ts` 中的 `markdownTools` 是 `render`、`parse`、`extract`、`lint` 的唯一 registry，将 schema、元信息、CLI 声明与惰性 `run` 绑定。公开 API、CLI 与 MCP 均遍历该 registry 派生；Worker 复用同一组 procedure，并额外提供内部 `preview`。
 
-```
-                    ┌─────────────────────────────────────────┐
-                    │           Markdown 处理管道              │
-                    └─────────────────────────────────────────┘
-                                        │
-        ┌───────────────┬───────────────┼───────────────┬───────────────┐
-        ▼               ▼               ▼               ▼               ▼
-    ┌───────┐       ┌───────┐       ┌───────┐       ┌───────┐       ┌───────┐
-    │ Parse │       │ Render│       │Extract│       │ Lint  │       │ Upload│
-    │HTML→MD│       │MD→HTML│       │MD→Text│       │MD Fix │       │ Image │
-    └───────┘       └───────┘       └───────┘       └───────┘       └───────┘
-        │               │               │               │               │
-        ▼               ▼               ▼               ▼               ▼
-   rehype-remark   remark-rehype   remark-retext   markdownlint    S3/DC Storage
-                        │
-                        ▼
-                ┌───────────────┐
-                │  juice (CSS)  │
-                │   内联样式     │
-                └───────────────┘
-                        │
-        ┌───────────────┐
-        ▼               ▼
-    ┌───────┐       ┌───────┐
-    │ HTML  │       │ WeChat│
-    │ 通用  │       │ 适配器│
-    └───────┘       └───────┘
-```
+各工具实现分别位于 `render/html.ts`、`parse/html.ts`、`extract/text.ts` 与 `lint/markdown.ts`。旧的 per-tool `index.ts`、`tools.ts` 和 `rpc.ts` 已删除。
 
 ### 渲染流程详解
 
@@ -144,10 +120,10 @@ src/
 │                 │                 │                         │
 │  • files[]      │  • scrollRatio  │  • previewWidth         │
 │  • activeFileId │  • scrollSource │  • userPreferredWidth   │
-│  • currentContent│ • footnoteLinks│  • markdownStyle        │
-│  • isInitialized│  • newWindow    │  • codeTheme            │
-│  • hasHydrated  │  • scrollSync   │  • customCss            │
-│                 │                 │  • renderedHtmlMap      │
+│  • currentContent│ • 3 项编辑设置 │  • previewColorScheme   │
+│  • isInitialized│                 │  • 渲染主题与 customCss │
+│  • contentStatus│                 │  • renderedSignature    │
+│  • revision     │                 │  • hasHydrated          │
 ├─────────────────┴─────────────────┴─────────────────────────┤
 │                   commandPaletteStore                       │
 │                                                             │
@@ -157,24 +133,26 @@ src/
 
 ### 持久化策略
 
-| Store               | LocalStorage Key | 持久化内容                                   |
-| ------------------- | ---------------- | -------------------------------------------- |
-| filesStore          | `bm.md.files`    | 文件元数据、activeFileId（内容存 IndexedDB） |
-| editorStore         | `bm.md.editor`   | 设置项（不含滚动状态）                       |
-| previewStore        | `bm.md.preview`  | 样式偏好、customCss（不含 HTML 缓存）        |
-| commandPaletteStore | -                | 不持久化                                     |
+| Store               | 存储位置/Key                 | 持久化内容                                              |
+| ------------------- | ---------------------------- | ------------------------------------------------------- |
+| filesStore          | IndexedDB + sessionStorage   | catalog/正文；当前标签活动文件使用 `bm.md.files.active` |
+| editorStore         | localStorage `bm.md.editor`  | 脚注链接、新窗口打开、滚动同步 3 项设置（不含滚动状态） |
+| previewStore        | localStorage `bm.md.preview` | 宽度、配色、渲染主题与 customCss；不保存渲染 HTML       |
+| commandPaletteStore | -                            | 不持久化                                                |
 
 ### Store 交互
 
-- `editorStore` 设置变更时，调用 `previewStore.clearRenderedHtmlCache()` 清除缓存
-- `filesStore` 使用 `hasHydrated` 标志确保 IndexedDB 内容在 Store 元数据恢复后加载
+- `editorStore` 与 `previewStore` 使用 `skipHydration`，由 `src/lib/client-integrations.ts` 在客户端显式调用 `persist.rehydrate()`
+- 预览 HTML 只保存在 iframe 中；`renderedSignature` 仅标识当前输入是否已真正提交，不进入持久化存储
+- `filesStore` 不使用 Zustand persist。文件 catalog 是 IndexedDB 唯一事实源，`activeFileId` 是标签页私有会话状态
+- 正文只在 `contentStatus=ready` 且 `contentFileId=activeFileId` 时允许编辑；切换加载期间编辑器和导出入口均关闭
 - 组件通过 Hooks 订阅 Store，实现响应式更新
 
 ---
 
 ## 存储架构
 
-### 本地存储（文件内容）
+### 本地存储（文件 catalog 与正文）
 
 使用 IndexedDB 存储用户的 Markdown 文档内容：
 
@@ -182,19 +160,32 @@ src/
 ┌──────────────────────────────────────────────────────────────┐
 │                    file-storage.ts                           │
 ├──────────────────────────────────────────────────────────────┤
-│  IndexedDB (idb)                                             │
+│  IndexedDB (idb, v2)                                         │
 │  ├─ Database: bm.md                                          │
+│  ├─ ObjectStore: catalog                                     │
+│  │   └─ { key: "main", revision, files[] }                  │
 │  └─ ObjectStore: files                                       │
-│      └─ { id: string, content: string }                      │
+│      └─ { id: string, content: string, version: number }     │
 ├──────────────────────────────────────────────────────────────┤
 │  降级策略                                                     │
-│  └─ 浏览器不支持时自动降级为内存存储                           │
+│  ├─ 首次打开不可用时降级为内存存储                             │
+│  └─ 运行期失败保留内存草稿并阻止破坏性切换                     │
 └──────────────────────────────────────────────────────────────┘
 ```
 
+create、rename、delete 会在 IndexedDB 事务内读取最新 catalog；create/delete 同时修改正文 Store，避免 metadata 与正文半提交。正文保存先确认 catalog 中仍存在文件，再递增独立 `version`，因此删除后的迟到保存不会复活文件。
+
+跨标签同步不传递全量快照：提交方只写入 `bm.md.files.signal` revision/version 通知，接收方重读 IndexedDB，且不会回写通知。文件列表共享，活动标签通过 sessionStorage 保持各标签独立；同一正文并发编辑采用 version 排序的 last-writer-wins。正文首笔编辑立即写入，连续输入在 150ms 尾随窗口内合并，显式切换或页面隐藏会立即 flush。
+
+旧版 `localStorage['bm.md.files']` 仅用于一次性迁移到 v2 catalog，迁移成功后删除。
+
+`src/lib/file-importer.ts` 统一识别 `.md`、`.markdown`、`.mdown`、`.mkd`（大小写不敏感），HTML 文件经 Markdown Worker 转换。批量导入按原始顺序创建标签；`filesStore.createFile()` 创建文件后立即将其设为活动文件，因此最后创建的文件保持激活。
+
 ### 云端存储（图片上传）
 
-支持 S3 兼容存储与 DC 图床双后端：
+客户端上传边界是 `src/lib/upload-image.ts`：使用 `ofetch` 请求同源或 `VITE_API_URL` 下的 `/api/upload/image`，并用 Zod 校验成功响应、统一提取错误信息。旧的 `services` 上传层与顶层 `lib/api` helper 已删除。
+
+服务端路由 `src/routes/api.upload.image.ts` 校验表单、图片大小和 PNG/JPEG/GIF/WebP 文件签名，并由检测结果决定扩展名和 Content-Type，再通过 `src/storage/index.ts` 选择 S3 兼容存储或 DC 图床：
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -287,18 +278,12 @@ Markdown 渲染在 Web Worker 中执行，避免阻塞主线程：
 
 ### 环境检测
 
-项目通过环境变量自动检测部署平台：
+`scripts/vite/platform.ts` 集中解析部署环境，`vite.config.ts` 使用其结果配置 Nitro、预渲染与 PWA 输出目录。阿里云 ESA 优先；腾讯 EdgeOne 仅在 `HOME` 与 `TMPDIR` 同时匹配时启用：
 
 ```typescript
-// vite.config.ts
-if (process.env.AliUid) {
-  // 阿里云 ESA
-  customPreset = './preset/aliyun-esa/nitro.config.ts'
-}
-else if (process.env.HOME === '/dev/shm/home') {
-  // 腾讯云 EdgeOne
-  customPreset = './preset/tencent-edgeone/nitro.config.ts'
-}
+const isAliyunESA = Boolean(environment.AliUid)
+const isTencentEdgeOne = environment.HOME === '/dev/shm/home'
+  && environment.TMPDIR === '/dev/shm/tmp'
 ```
 
 ---
@@ -307,7 +292,7 @@ else if (process.env.HOME === '/dev/shm/home') {
 
 ### oRPC 架构
 
-使用 oRPC 构建类型安全的 API：
+使用 oRPC 构建类型安全的 API。`src/lib/markdown/router.ts` 遍历 `markdownTools` 生成四个公开 procedure，避免维护第二份 handler 映射：
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -330,15 +315,15 @@ CLI 使用 `cac` 实现，入口为 `src/cli/index.ts`，构建后输出到 `bin
 ├─────────────────┬─────────────────┬─────────────────────────┤
 │ bmmd render     │ bmmd parse      │ bmmd extract/lint       │
 ├─────────────────┴─────────────────┴─────────────────────────┤
-│ src/lib/markdown/*/definition.ts 声明输入、选项与描述          │
-│ src/lib/markdown/definitions.ts 统一导出工具定义              │
-│ src/cli/index.ts 读取定义并注册命令                           │
+│ src/lib/markdown/definitions.ts 提供唯一 markdownTools registry│
+│ src/cli/core.ts 直接复用 registry 的 schema、CLI 声明与 run    │
+│ src/cli/index.ts 遍历 registry 注册命令                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 设计要点：
 
-- **声明式命令** - 每个 Markdown 工具在 `definition.ts` 中声明 Zod 输入 schema、CLI 输入字段和选项，CLI 自动生成命令与帮助信息
+- **声明式命令** - `markdownTools` 汇总各工具的 Zod schema、CLI 输入字段、选项和执行函数，CLI 自动生成命令与帮助信息
 - **统一校验** - CLI 执行前复用同一份 Zod schema 校验参数，错误统一以 `bmmd: ...` 输出
 - **输入输出一致** - 命令支持文件输入和 stdin；默认写 stdout，`--output <file>` 写入文件
 - **特殊写回** - `bmmd lint <file> --fix` 将修复结果写回输入文件，且不能与 `--output` 同时使用
@@ -348,14 +333,7 @@ CLI 使用 `cac` 实现，入口为 `src/cli/index.ts`，构建后输出到 `bin
 
 实现 Model Context Protocol 服务端：
 
-```typescript
-const server = new McpServer({ name, version })
-
-server.registerTool('render', renderDefinition, handler)
-server.registerTool('parse', parseDefinition, handler)
-server.registerTool('extract', extractDefinition, handler)
-server.registerTool('lint', lintDefinition, handler)
-```
+`src/lib/markdown/mcp.ts` 遍历 `markdownTools` 注册工具，并只负责 MCP 配置与结果格式化。工具集合、schema 和执行逻辑不在 MCP 层重复声明。
 
 ---
 
@@ -366,7 +344,6 @@ server.registerTool('lint', lintDefinition, handler)
 | 插件                          | 功能              |
 | ----------------------------- | ----------------- |
 | `cssRawMinifyPlugin`          | CSS 原始导入压缩  |
-| `htmlRawMinifyPlugin`         | HTML 原始导入压缩 |
 | `markdownPlugin`              | Markdown 文件导入 |
 | `tanstackStart`               | SSR 支持          |
 | `babel-plugin-react-compiler` | React 编译器优化  |

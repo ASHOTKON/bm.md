@@ -4,16 +4,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { editorCommandConfig } from '@/config'
 import { formatMarkdown } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
-import { useFilesStore } from '@/stores/files'
+import { isFileContentReady, useFilesStore } from '@/stores/files'
+
+function handleFormatClick() {
+  trackEvent('editor', 'format', 'button')
+  const { activeFileId, currentContent, replaceFileContentIfUnchanged } = useFilesStore.getState()
+  if (!activeFileId) {
+    return
+  }
+  void formatMarkdown(
+    currentContent,
+    nextContent => replaceFileContentIfUnchanged(activeFileId, currentContent, nextContent),
+  )
+}
 
 export function FormatButton() {
-  const content = useFilesStore(state => state.currentContent)
-  const setContent = useFilesStore(state => state.setCurrentContent)
-
-  const onFormatClick = () => {
-    trackEvent('editor', 'format', 'button')
-    formatMarkdown(content, setContent)
-  }
+  const isReady = useFilesStore(isFileContentReady)
 
   return (
     <Tooltip>
@@ -23,7 +29,8 @@ export function FormatButton() {
             variant="ghost"
             size="icon"
             aria-label={editorCommandConfig.format.label}
-            onClick={onFormatClick}
+            onClick={handleFormatClick}
+            disabled={!isReady}
           >
             <Wand className="size-4" />
           </Button>

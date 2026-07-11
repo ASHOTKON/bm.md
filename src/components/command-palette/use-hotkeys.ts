@@ -8,7 +8,7 @@ interface HotkeyHandler {
 }
 
 export function useHotkeys(handlers: HotkeyHandler[]) {
-  const { toggle } = useCommandPaletteStore()
+  const toggle = useCommandPaletteStore(state => state.toggle)
   const handlersRef = useRef(handlers)
 
   useEffect(() => {

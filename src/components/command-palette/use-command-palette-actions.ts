@@ -1,10 +1,12 @@
 import type { SupportedPlatform } from '@/config'
-import type { EditorBooleanKey, EditorBooleanSetterKey, EditorState } from '@/stores/editor'
+import type { EditorBooleanKey, EditorBooleanSetterKey } from '@/stores/editor'
 import type { InfographicSettings } from '@/stores/preview'
 import type { MermaidThemeId } from '@/themes/mermaid-theme'
 import { useNavigate } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
+import { toast } from 'sonner'
 import { usePlatformCopy } from '@/components/markdown/previewer/action-bar/use-platform-copy'
+import { isPreviewReadyNow } from '@/components/markdown/previewer/preview-ready'
 import { editorCommandConfig, platformConfig } from '@/config'
 import {
   copyImage,
@@ -20,7 +22,7 @@ import {
 import { trackEvent } from '@/lib/analytics'
 import { useCommandPaletteStore } from '@/stores/command-palette'
 import { useEditorStore } from '@/stores/editor'
-import { useFilesStore } from '@/stores/files'
+import { isFileContentReady, useFilesStore } from '@/stores/files'
 import {
   PREVIEW_WIDTH_DESKTOP,
   PREVIEW_WIDTH_MOBILE,
@@ -29,7 +31,6 @@ import {
 import { useHotkeys } from './use-hotkeys'
 
 export interface CommandPaletteActions {
-  editorStore: EditorState
   markdownStyle: string
   codeTheme: string
   mermaidTheme: MermaidThemeId
@@ -53,6 +54,7 @@ export interface CommandPaletteActions {
   handleDesktopView: () => void
   handleNavigate: (path: string) => void
   handleExternalLink: (url: string) => void
+  isSettingEnabled: (storeKey: EditorBooleanKey) => boolean
   handleToggleSetting: (storeKey: EditorBooleanKey, setterKey: EditorBooleanSetterKey) => void
   handleSelectMarkdownStyle: (id: string) => void
   handleSelectCodeTheme: (id: string) => void
@@ -68,10 +70,15 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
   const setOpen = useCommandPaletteStore(state => state.setOpen)
   const resetSubMenu = useCommandPaletteStore(state => state.resetSubMenu)
 
-  const content = useFilesStore(state => state.currentContent)
-  const setContent = useFilesStore(state => state.setCurrentContent)
-  const createFile = useFilesStore(state => state.createFile)
-  const switchFile = useFilesStore(state => state.switchFile)
+  const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
+  const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)
+  const enableScrollSync = useEditorStore(state => state.enableScrollSync)
+  const settings = {
+    enableFootnoteLinks,
+    openLinksInNewWindow,
+    enableScrollSync,
+  }
+
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
@@ -82,8 +89,6 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
   const setMermaidTheme = usePreviewStore(state => state.setMermaidTheme)
   const infographic = usePreviewStore(state => state.infographic)
   const setInfographic = usePreviewStore(state => state.setInfographic)
-
-  const editorStore = useEditorStore()
 
   const wechatCopy = usePlatformCopy('wechat')
   const htmlCopy = usePlatformCopy('html')
@@ -104,8 +109,7 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
   const handleNewFile = async () => {
     closePanel()
     trackEvent('editor', 'new-file', 'menu')
-    const id = await createFile()
-    await switchFile(id)
+    await useFilesStore.getState().createFile().catch(() => undefined)
   }
 
   const handleImport = () => {
@@ -118,14 +122,31 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
 
   const handleExport = () => {
     closePanel()
+    const filesState = useFilesStore.getState()
+    if (!isFileContentReady(filesState)) {
+      toast.info('文件仍在加载')
+      return
+    }
     trackEvent('export', 'markdown', 'menu')
-    exportMarkdown(content)
+    exportMarkdown(filesState.currentContent)
   }
 
   const handleFormat = async () => {
     closePanel()
+    const filesState = useFilesStore.getState()
+    if (!isFileContentReady(filesState)) {
+      toast.info('文件仍在加载')
+      return
+    }
     trackEvent('editor', 'format', 'menu')
-    await formatMarkdown(content, setContent)
+    const { activeFileId, currentContent, replaceFileContentIfUnchanged } = filesState
+    if (!activeFileId) {
+      return
+    }
+    await formatMarkdown(
+      currentContent,
+      nextContent => replaceFileContentIfUnchanged(activeFileId, currentContent, nextContent),
+    )
   }
 
   const handleOpenResetDialog = () => {
@@ -135,6 +156,10 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
 
   const handleCopyPlatform = (platform: SupportedPlatform) => async () => {
     closePanel()
+    if (!isFileContentReady(useFilesStore.getState())) {
+      toast.info('文件仍在加载')
+      return
+    }
     await copyPlatform({
       platform,
       markdownStyle,
@@ -149,24 +174,40 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
 
   const handleExportImage = async () => {
     closePanel()
+    if (!isPreviewReadyNow()) {
+      toast.info('预览仍在更新')
+      return
+    }
     trackEvent('export', 'image', 'menu')
     await exportImage()
   }
 
   const handleCopyImage = async () => {
     closePanel()
+    if (!isPreviewReadyNow()) {
+      toast.info('预览仍在更新')
+      return
+    }
     trackEvent('copy', 'image', 'menu')
     await copyImage()
   }
 
   const handleExportPdf = async () => {
     closePanel()
+    if (!isPreviewReadyNow()) {
+      toast.info('预览仍在更新')
+      return
+    }
     trackEvent('export', 'pdf', 'menu')
     await exportPdf()
   }
 
   const handlePrintPreview = () => {
     closePanel()
+    if (!isPreviewReadyNow()) {
+      toast.info('预览仍在更新')
+      return
+    }
     trackEvent('export', 'print', 'menu')
     printPreview()
   }
@@ -196,7 +237,12 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
     closePanel()
   }
 
+  const isSettingEnabled = (storeKey: EditorBooleanKey) => {
+    return settings[storeKey]
+  }
+
   const handleToggleSetting = (storeKey: EditorBooleanKey, setterKey: EditorBooleanSetterKey) => {
+    const editorStore = useEditorStore.getState()
     const currentValue = editorStore[storeKey]
     const setter = editorStore[setterKey]
     setter(!currentValue)
@@ -243,7 +289,6 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
   useHotkeys(hotkeyHandlers)
 
   return {
-    editorStore,
     markdownStyle,
     codeTheme,
     mermaidTheme,
@@ -267,6 +312,7 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
     handleDesktopView,
     handleNavigate,
     handleExternalLink,
+    isSettingEnabled,
     handleToggleSetting,
     handleSelectMarkdownStyle,
     handleSelectCodeTheme,

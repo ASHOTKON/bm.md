@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFilesStore } from '@/stores/files'
+import { FILE_TAB_PANEL_ID, getFileTabId } from './a11y'
 import { FileTab } from './file-tab'
 import { NewFileButton } from './new-file-button'
 
@@ -11,20 +12,17 @@ export function FileTabs() {
   const files = useFilesStore(state => state.files)
   const activeFileId = useFilesStore(state => state.activeFileId)
   const isInitialized = useFilesStore(state => state.isInitialized)
-  const hasHydrated = useFilesStore(state => state.hasHydrated)
   const initialize = useFilesStore(state => state.initialize)
   const switchFile = useFilesStore(state => state.switchFile)
   const createFile = useFilesStore(state => state.createFile)
   const deleteFile = useFilesStore(state => state.deleteFile)
   const renameFile = useFilesStore(state => state.renameFile)
 
-  const tabsRef = useRef<Map<string, HTMLDivElement> | null>(null)
+  const tabsRef = useRef<Map<string, HTMLButtonElement> | null>(null)
 
   useEffect(() => {
-    if (hasHydrated) {
-      initialize()
-    }
-  }, [hasHydrated, initialize])
+    void initialize().catch(() => undefined)
+  }, [initialize])
 
   useEffect(() => {
     if (isInitialized && activeFileId) {
@@ -43,11 +41,28 @@ export function FileTabs() {
   }, [isInitialized, activeFileId])
 
   const handleCreateFile = async () => {
-    const id = await createFile()
-    await switchFile(id)
+    await createFile().catch(() => undefined)
   }
 
-  const setTabRef = (id: string) => (el: HTMLDivElement | null) => {
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      await deleteFile(fileId)
+    }
+    catch {
+      return
+    }
+
+    const nextActiveFileId = useFilesStore.getState().activeFileId
+    if (!nextActiveFileId) {
+      return
+    }
+
+    requestAnimationFrame(() => {
+      tabsRef.current?.get(nextActiveFileId)?.focus()
+    })
+  }
+
+  const setTabRef = (id: string) => (el: HTMLButtonElement | null) => {
     if (!tabsRef.current) {
       tabsRef.current = new Map()
     }
@@ -60,37 +75,22 @@ export function FileTabs() {
     }
   }
 
-  const handleTabKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault()
-      const nextIndex = e.key === 'ArrowLeft'
-        ? (currentIndex - 1 + files.length) % files.length
-        : (currentIndex + 1) % files.length
-      const nextFile = files[nextIndex]
-      switchFile(nextFile.id)
-      requestAnimationFrame(() => {
-        tabsRef.current?.get(nextFile.id)?.focus()
-      })
+  const handleActivate = async (fileId: string) => {
+    await switchFile(fileId).catch(() => undefined)
+  }
+
+  const handleTabKeyboardActivate = async (index: number, moveFocus: boolean) => {
+    const file = files[index]
+    try {
+      await switchFile(file.id)
     }
-    else if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      const file = files[currentIndex]
-      switchFile(file.id)
+    catch {
+      return
     }
-    else if (e.key === 'Home') {
-      e.preventDefault()
-      const firstFile = files[0]
-      switchFile(firstFile.id)
+
+    if (moveFocus) {
       requestAnimationFrame(() => {
-        tabsRef.current?.get(firstFile.id)?.focus()
-      })
-    }
-    else if (e.key === 'End') {
-      e.preventDefault()
-      const lastFile = files[files.length - 1]
-      switchFile(lastFile.id)
-      requestAnimationFrame(() => {
-        tabsRef.current?.get(lastFile.id)?.focus()
+        tabsRef.current?.get(file.id)?.focus()
       })
     }
   }
@@ -109,22 +109,21 @@ export function FileTabs() {
         className="flex min-w-0 flex-1 scrollbar-none overflow-x-auto"
       >
         {files.map((file, index) => (
-          <div
+          <FileTab
             key={file.id}
-            ref={setTabRef(file.id)}
-            role="tab"
-            aria-selected={file.id === activeFileId}
+            file={file}
+            currentIndex={index}
+            fileCount={files.length}
+            isActive={file.id === activeFileId}
             tabIndex={file.id === activeFileId ? 0 : -1}
-            onClick={() => switchFile(file.id)}
-            onKeyDown={e => handleTabKeyDown(e, index)}
-          >
-            <FileTab
-              file={file}
-              isActive={file.id === activeFileId}
-              onClose={() => deleteFile(file.id)}
-              onRename={name => renameFile(file.id, name)}
-            />
-          </div>
+            tabId={getFileTabId(file.id)}
+            panelId={FILE_TAB_PANEL_ID}
+            tabRef={setTabRef(file.id)}
+            onActivate={() => handleActivate(file.id)}
+            onClose={() => handleDeleteFile(file.id)}
+            onKeyboardActivate={handleTabKeyboardActivate}
+            onRename={name => renameFile(file.id, name)}
+          />
         ))}
       </div>
       <div className="shrink-0 border-l px-1">

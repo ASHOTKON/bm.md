@@ -9,7 +9,7 @@ export function hasChildren(node: unknown): node is Root | Element {
 }
 
 export function getClassList(node: Element): string[] {
-  const className = node.properties?.className
+  const className: unknown = node.properties?.className
   if (Array.isArray(className)) {
     return className.filter((item): item is string => typeof item === 'string')
   }

@@ -79,7 +79,6 @@ export const Route = createRootRoute({
       // Preload 关键资源
       { rel: 'preload', href: fontUrl, as: 'style', crossOrigin: 'anonymous' },
       { rel: 'preload', href: appCss, as: 'style' },
-      { rel: 'preload', href: '/blur-mask.svg', as: 'image', type: 'image/svg+xml' },
       // Stylesheets
       { rel: 'stylesheet', href: fontUrl },
       { rel: 'stylesheet', href: appCss },

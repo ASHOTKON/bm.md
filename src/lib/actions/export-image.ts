@@ -34,8 +34,12 @@ export async function copyImage() {
       return
 
     const blob = await snapshot.toBlob({ type: 'png' })
-    await copyImageToClipboard(blob)
-    toast.success('已复制图片到剪贴板')
+    if (await copyImageToClipboard(blob)) {
+      toast.success('已复制图片到剪贴板')
+    }
+    else {
+      toast.error('复制图片失败')
+    }
   }
   catch (error) {
     toast.error('复制图片失败')

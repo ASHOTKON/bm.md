@@ -1,18 +1,13 @@
 #!/usr/bin/env node
 
-import type { CliTool } from './core'
-
 import process from 'node:process'
 import { cac } from 'cac'
 import { description, version } from '../../package.json'
-import { markdownTools } from '../lib/markdown/tools'
-import { formatError, handleCommand, registerOption } from './core'
+import { cliTools, formatError, handleCommand, registerOption } from './core'
 
 type CommandAction = () => Promise<void>
 
 const cli = cac('bmmd')
-
-const cliTools = markdownTools satisfies readonly CliTool[]
 
 function run(action: CommandAction) {
   action().catch((error: unknown) => {
@@ -22,10 +17,9 @@ function run(action: CommandAction) {
 }
 
 for (const tool of cliTools) {
-  const { definition } = tool
-  const command = cli.command(`${definition.name} [${definition.cli.inputLabel}]`, definition.description)
+  const command = cli.command(`${tool.name} [${tool.cli.inputLabel}]`, tool.description)
 
-  for (const option of definition.cli.options) {
+  for (const option of tool.cli.options) {
     registerOption(command, option)
   }
 

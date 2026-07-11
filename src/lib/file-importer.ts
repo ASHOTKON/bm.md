@@ -1,34 +1,61 @@
 import { toast } from 'sonner'
+import { getMarkdownFileExtension, isMarkdownFileName } from '@/lib/markdown-file'
 import { useFilesStore } from '@/stores/files'
 
-interface ImportedFile {
+export { MARKDOWN_FILE_EXTENSIONS } from '@/lib/markdown-file'
+
+const HTML_FILE_EXTENSIONS = new Set(['.html', '.htm'])
+
+export type ImportFileKind = 'markdown' | 'html' | 'unsupported'
+
+export interface ImportedFile {
   name: string
   content: string
+  kind: Exclude<ImportFileKind, 'unsupported'>
 }
 
-async function parseFileToMarkdown(file: File): Promise<ImportedFile | null> {
-  if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
-    const content = await file.text()
-    const name = file.name.endsWith('.md') ? file.name : `${file.name}.md`
-    return { name, content }
+function getFileExtension(name: string): string {
+  return name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? ''
+}
+
+export function classifyFile(file: Pick<File, 'name' | 'type'>): ImportFileKind {
+  const extension = getFileExtension(file.name)
+  if (isMarkdownFileName(file.name) || file.type === 'text/markdown') {
+    return 'markdown'
   }
 
-  if (file.type === 'text/html') {
+  if (HTML_FILE_EXTENSIONS.has(extension) || file.type === 'text/html') {
+    return 'html'
+  }
+
+  return 'unsupported'
+}
+
+export async function parseFileToMarkdown(file: File): Promise<ImportedFile | null> {
+  const kind = classifyFile(file)
+  if (kind === 'markdown') {
+    const content = await file.text()
+    const name = getMarkdownFileExtension(file.name)
+      ? file.name
+      : `${file.name}.md`
+    return { name, content, kind }
+  }
+
+  if (kind === 'html') {
     const [html, { markdown }] = await Promise.all([
       file.text(),
       import('@/lib/markdown/browser'),
     ])
     const { result: content } = await markdown.parse({ html })
     const baseName = file.name.replace(/\.html?$/i, '')
-    return { name: `${baseName}.md`, content }
+    return { name: `${baseName}.md`, content, kind }
   }
 
   return null
 }
 
-export async function importFilesAsNewTabs(files: File[]): Promise<string | null> {
-  const { createFile, switchFile } = useFilesStore.getState()
-  let lastCreatedId: string | null = null
+export async function importFilesAsNewTabs(files: File[]): Promise<void> {
+  const { createFile } = useFilesStore.getState()
   const parsedFiles = await Promise.allSettled(files.map(file => parseFileToMarkdown(file)))
 
   for (let index = 0; index < parsedFiles.length; index++) {
@@ -43,8 +70,7 @@ export async function importFilesAsNewTabs(files: File[]): Promise<string | null
     if (parsed) {
       try {
         // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 文件创建会写入标签页状态，需要按原始文件顺序串行执行。
-        const id = await createFile(parsed.name, parsed.content)
-        lastCreatedId = id
+        await createFile(parsed.name, parsed.content)
         toast.success(`导入成功: ${parsed.name}`)
       }
       catch (error) {
@@ -53,21 +79,10 @@ export async function importFilesAsNewTabs(files: File[]): Promise<string | null
       }
     }
   }
-
-  if (lastCreatedId) {
-    // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 必须等所有文件创建完成后才能切换到最后创建的标签页。
-    await switchFile(lastCreatedId)
-  }
-
-  return lastCreatedId
 }
 
 export function isTextFile(file: File): boolean {
-  return (
-    file.type === 'text/markdown'
-    || file.name.endsWith('.md')
-    || file.type === 'text/html'
-  )
+  return classifyFile(file) !== 'unsupported'
 }
 
 export function isImageFile(file: File): boolean {

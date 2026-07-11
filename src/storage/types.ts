@@ -14,8 +14,8 @@ export interface UploadResult {
 export interface UploadOptions {
   /** 文件内容 */
   file: Blob
-  /** 文件名 */
-  filename: string
+  /** 服务端检测出的文件扩展名 */
+  extension: 'gif' | 'jpg' | 'png' | 'webp'
   /** 文件 MIME 类型 */
   contentType: string
 }

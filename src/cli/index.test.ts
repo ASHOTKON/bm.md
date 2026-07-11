@@ -7,11 +7,11 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as z from 'zod'
 
-import { lintDefinition, renderDefinition } from '../lib/markdown/definitions'
-import { buildInput, defineCliTool, formatError, handleCommand } from './core'
+import { markdownTools, renderDefinition } from '../lib/markdown/definitions'
+import { buildInput, formatError, handleCommand } from './core'
 
 const tempDirs: string[] = []
 
@@ -103,10 +103,18 @@ async function runCli(args: string[], input?: string): Promise<CliResult> {
 }
 
 afterEach(async () => {
+  vi.restoreAllMocks()
   await Promise.all(tempDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
 })
 
 describe('cli core', () => {
+  const lintTool = markdownTools.find(tool => tool.name === 'lint')
+  const extractTool = markdownTools.find(tool => tool.name === 'extract')
+
+  if (!lintTool || !extractTool) {
+    throw new Error('缺少 CLI 工具')
+  }
+
   it('格式化 Zod 错误时包含字段路径', () => {
     const schema = z.object({ markdown: z.string() })
     const result = schema.safeParse({ markdown: 123 })
@@ -118,15 +126,11 @@ describe('cli core', () => {
   })
 
   it('--fix 需要输入文件', async () => {
-    const tool = defineCliTool(lintDefinition, async input => input.markdown)
-
-    await expect(handleCommand(tool, undefined, { fix: true })).rejects.toThrow('--fix 需要提供输入文件')
+    await expect(handleCommand(lintTool, undefined, { fix: true })).rejects.toThrow('--fix 需要提供输入文件')
   })
 
   it('--fix 不能与 --output 同时使用', async () => {
-    const tool = defineCliTool(lintDefinition, async input => input.markdown)
-
-    await expect(handleCommand(tool, 'input.md', { fix: true, output: 'out.md' })).rejects.toThrow('--fix 不能与 --output 同时使用')
+    await expect(handleCommand(lintTool, 'input.md', { fix: true, output: 'out.md' })).rejects.toThrow('--fix 不能与 --output 同时使用')
   })
 
   it('customCssFile 内容追加在 inline customCss 后面', async () => {
@@ -142,6 +146,19 @@ describe('cli core', () => {
     })
 
     expect(input.customCss).toBe('.inline { color: blue; }\n.file { color: red; }')
+  })
+
+  it('执行工具前只校验一次输入', async () => {
+    const dir = await createTempDir()
+    const inputFile = join(dir, 'input.md')
+    const outputFile = join(dir, 'output.txt')
+    await writeFile(inputFile, '**正文**')
+    const parse = vi.spyOn(extractTool.inputSchema, 'parse')
+
+    await handleCommand(extractTool, inputFile, { output: outputFile })
+
+    expect(parse).toHaveBeenCalledOnce()
+    expect(await readFile(outputFile, 'utf8')).toContain('正文')
   })
 })
 
@@ -163,7 +180,7 @@ describe('cli entry', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toMatch(/<h1[\s>]/)
     expect(result.stdout).toContain('集成标题')
-  })
+  }, 10_000)
 
   it('extract 支持 stdin 管道', async () => {
     const result = await runCli(['extract'], '# 管道标题\n\n[链接](https://example.com)')

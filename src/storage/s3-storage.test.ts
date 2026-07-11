@@ -35,7 +35,7 @@ describe('s3 storage', () => {
     const storage = new S3Storage()
     const file = new Blob(['image'], { type: 'image/png' })
 
-    const result = await storage.upload({ file, filename: 'avatar.png', contentType: 'image/png' })
+    const result = await storage.upload({ file, extension: 'png', contentType: 'image/png' })
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringMatching(/^https:\/\/s3\.example\.com\/bucket\/\d{4}-\d{2}-\d{2}\/.+\.png$/),
@@ -53,7 +53,7 @@ describe('s3 storage', () => {
 
     await expect(storage.upload({
       file: new Blob(['image'], { type: 'image/png' }),
-      filename: 'avatar.png',
+      extension: 'png',
       contentType: 'image/png',
     })).rejects.toMatchObject({ provider: 's3' })
   })

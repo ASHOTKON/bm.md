@@ -3,15 +3,11 @@ import { OpenAPIGenerator } from '@orpc/openapi'
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 import { describe, expect, it } from 'vitest'
 import { MAX_INPUT_SIZE } from '@/lib/markdown/constants'
+import { markdownTools } from '@/lib/markdown/definitions'
 import { router } from '@/lib/markdown/router'
 import { version } from '@/package.json'
 
-const paths = [
-  '/markdown/render',
-  '/markdown/parse',
-  '/markdown/extract',
-  '/markdown/lint',
-]
+const paths = markdownTools.map(tool => `/markdown/${tool.name}`)
 
 interface OpenAPISpec {
   servers?: Array<{ url?: string }>
@@ -78,6 +74,12 @@ function getRequestSchema(operation: Operation) {
 }
 
 describe('openapi 规范', () => {
+  it('只暴露 registry 中的四个 Markdown 工具', async () => {
+    const spec = await generateSpec()
+
+    expect(Object.keys(spec.paths ?? {}).sort()).toEqual([...paths].sort())
+  })
+
   it('直接从 router 生成关键路径定义', async () => {
     const spec = await generateSpec()
 

@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import type { CommandPaletteActions } from './use-command-palette-actions'
 import { ChevronLeft, Code, ImageIcon, Palette, PaletteIcon, Workflow } from 'lucide-react'
 import {
@@ -16,104 +17,97 @@ interface SubmenuProps {
 
 export function MarkdownStyleMenu({ actions }: SubmenuProps) {
   return (
-    <CommandGroup heading="排版样式">
-      <BackItem onSelect={actions.resetSubMenu} />
-      <CommandSeparator />
-      {markdownStyles.map(style => (
-        <CommandItem
-          key={style.id}
-          onSelect={() => actions.handleSelectMarkdownStyle(style.id)}
-          data-checked={actions.markdownStyle === style.id}
-        >
-          <Palette className="size-4" />
-          {style.name}
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <OptionSubmenu
+      heading="排版样式"
+      items={markdownStyles}
+      currentValue={actions.markdownStyle}
+      Icon={Palette}
+      onSelect={actions.handleSelectMarkdownStyle}
+      onBack={actions.resetSubMenu}
+    />
   )
 }
 
 export function CodeThemeMenu({ actions }: SubmenuProps) {
   return (
-    <CommandGroup heading="代码主题">
-      <BackItem onSelect={actions.resetSubMenu} />
-      <CommandSeparator />
-      {codeThemes.map(theme => (
-        <CommandItem
-          key={theme.id}
-          onSelect={() => actions.handleSelectCodeTheme(theme.id)}
-          data-checked={actions.codeTheme === theme.id}
-        >
-          <Code className="size-4" />
-          {theme.name}
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <OptionSubmenu
+      heading="代码主题"
+      items={codeThemes}
+      currentValue={actions.codeTheme}
+      Icon={Code}
+      onSelect={actions.handleSelectCodeTheme}
+      onBack={actions.resetSubMenu}
+    />
   )
 }
 
 export function MermaidThemeMenu({ actions }: SubmenuProps) {
   return (
-    <CommandGroup heading="流程图主题">
-      <BackItem onSelect={actions.resetSubMenu} />
-      <CommandSeparator />
-      {mermaidThemes.map(theme => (
-        <CommandItem
-          key={theme.id}
-          onSelect={() => actions.handleSelectMermaidTheme(theme.id)}
-          data-checked={actions.mermaidTheme === theme.id}
-        >
-          <Workflow className="size-4" />
-          {theme.name}
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <OptionSubmenu
+      heading="流程图主题"
+      items={mermaidThemes}
+      currentValue={actions.mermaidTheme}
+      Icon={Workflow}
+      onSelect={actions.handleSelectMermaidTheme}
+      onBack={actions.resetSubMenu}
+    />
   )
 }
 
 export function InfographicThemeMenu({ actions }: SubmenuProps) {
   return (
-    <CommandGroup heading="信息图主题">
-      <BackItem onSelect={actions.resetSubMenu} />
-      <CommandSeparator />
-      {infographicThemes.map(theme => (
-        <CommandItem
-          key={theme.id}
-          onSelect={() => actions.handleSelectInfographicTheme(theme.id)}
-          data-checked={actions.infographic.theme === theme.id}
-        >
-          <ImageIcon className="size-4" />
-          {theme.name}
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <OptionSubmenu
+      heading="信息图主题"
+      items={infographicThemes}
+      currentValue={actions.infographic.theme}
+      Icon={ImageIcon}
+      onSelect={actions.handleSelectInfographicTheme}
+      onBack={actions.resetSubMenu}
+    />
   )
 }
 
 export function InfographicPaletteMenu({ actions }: SubmenuProps) {
   return (
-    <CommandGroup heading="信息图色板">
-      <BackItem onSelect={actions.resetSubMenu} />
-      <CommandSeparator />
-      {infographicPalettes.map(palette => (
-        <CommandItem
-          key={palette.id}
-          onSelect={() => actions.handleSelectInfographicPalette(palette.id)}
-          data-checked={actions.infographic.palette === palette.id}
-        >
-          <PaletteIcon className="size-4" />
-          {palette.name}
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <OptionSubmenu
+      heading="信息图色板"
+      items={infographicPalettes}
+      currentValue={actions.infographic.palette}
+      Icon={PaletteIcon}
+      onSelect={actions.handleSelectInfographicPalette}
+      onBack={actions.resetSubMenu}
+    />
   )
 }
 
-function BackItem({ onSelect }: { onSelect: () => void }) {
+interface OptionSubmenuProps<TId extends string> {
+  heading: string
+  items: readonly { id: TId, name: string }[]
+  currentValue: string
+  Icon: LucideIcon
+  onSelect: (id: TId) => void
+  onBack: () => void
+}
+
+function OptionSubmenu<TId extends string>({ heading, items, currentValue, Icon, onSelect, onBack }: OptionSubmenuProps<TId>) {
   return (
-    <CommandItem onSelect={onSelect}>
-      <ChevronLeft className="size-4" />
-      返回
-    </CommandItem>
+    <CommandGroup heading={heading}>
+      <CommandItem onSelect={onBack}>
+        <ChevronLeft className="size-4" />
+        返回
+      </CommandItem>
+      <CommandSeparator />
+      {items.map(item => (
+        <CommandItem
+          key={item.id}
+          onSelect={() => onSelect(item.id)}
+          data-checked={currentValue === item.id}
+        >
+          <Icon className="size-4" />
+          {item.name}
+          {currentValue === item.id ? <span className="sr-only">，当前选中</span> : null}
+        </CommandItem>
+      ))}
+    </CommandGroup>
   )
 }
