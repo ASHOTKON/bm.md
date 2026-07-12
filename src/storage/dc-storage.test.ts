@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { version } from '@/package.json'
 import { DCStorage } from './index'
 
 afterEach(() => {
@@ -20,7 +21,10 @@ describe('dc storage', () => {
       contentType: 'image/png',
     })
 
-    expect(fetchMock).toHaveBeenCalledWith('https://upload.example.com', expect.objectContaining({ method: 'POST' }))
+    expect(fetchMock).toHaveBeenCalledWith('https://upload.example.com', expect.objectContaining({
+      method: 'POST',
+      headers: { 'User-Agent': `bmmd/${version}` },
+    }))
     const request = fetchMock.mock.calls[0]?.[1]
     const uploadedFile = (request?.body as FormData).get('image') as File
     expect(uploadedFile.name).toBe('image.png')

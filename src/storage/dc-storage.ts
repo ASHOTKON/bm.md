@@ -5,6 +5,7 @@
 
 import type { StorageProvider, UploadOptions, UploadResult } from './types'
 import { env } from '@/env'
+import { name, version } from '@/package.json'
 import { StorageError } from './types'
 
 /** DC 上传响应格式 */
@@ -32,6 +33,7 @@ export class DCStorage implements StorageProvider {
 
       const response = await fetch(this.uploadUrl, {
         method: 'POST',
+        headers: { 'User-Agent': `${name}/${version}` },
         body: formData,
       })
 
