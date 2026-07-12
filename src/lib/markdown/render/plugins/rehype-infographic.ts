@@ -1,3 +1,4 @@
+import { parseSyntax } from '@antv/infographic'
 import { renderToString } from '@antv/infographic/ssr'
 import { isValidPalette, isValidTheme } from '@/themes/infographic-theme'
 import { createSvgRendererPlugin } from './rehype-svg-renderer'
@@ -8,6 +9,8 @@ export interface RehypeInfographicOptions {
   palette?: string
 }
 
+type SsrInfographicOptions = Exclude<Parameters<typeof renderToString>[0], string>
+
 function extractSvgContent(svgString: string): string {
   const svgMatch = svgString.match(/<svg[\s\S]*<\/svg>/i)
   if (!svgMatch) {
@@ -17,35 +20,31 @@ function extractSvgContent(svgString: string): string {
   return svgMatch[0]
 }
 
-/**
- * 构建完整的 infographic 语法
- * 如果用户代码没有指定主题/色板，则注入全局配置
- */
-function buildSyntax(code: string, options: RehypeInfographicOptions): string {
+export function buildInfographicOptions(
+  code: string,
+  options: RehypeInfographicOptions,
+): SsrInfographicOptions {
   const { theme, palette } = options
-  const lines = code.split('\n')
-  const hasThemeBlock = lines.some(line => /^\s*theme\b/.test(line))
-
-  if (!hasThemeBlock) {
-    const validTheme = theme && isValidTheme(theme) ? theme : 'default'
-    const validPalette = palette && isValidPalette(palette) ? palette : undefined
-
-    const themeConfig: string[] = [`theme ${validTheme}`]
-    if (validPalette) {
-      themeConfig.push(`  palette ${validPalette}`)
-    }
-    return `${code}\n${themeConfig.join('\n')}`
+  const parsedOptions = parseSyntax(code).options
+  const themeConfig = {
+    ...parsedOptions.themeConfig,
+    palette: palette && isValidPalette(palette) ? palette : 'antv',
   }
 
-  return code
+  // 该包的解析器与 SSR 入口分别引用 ESM/CJS 类型，但运行时结构相同。
+  return {
+    ...parsedOptions,
+    theme: theme && isValidTheme(theme) ? theme : 'default',
+    themeConfig,
+  } as SsrInfographicOptions
 }
 
 const rehypeInfographic = createSvgRendererPlugin<RehypeInfographicOptions>({
   languageId: 'infographic',
   figureClassName: 'figure-infographic',
   render: async (code, options) => {
-    const syntax = buildSyntax(code, options)
-    return renderToString(syntax)
+    const infographicOptions = buildInfographicOptions(code, options)
+    return renderToString(infographicOptions)
   },
   extractSvg: extractSvgContent,
   adjustSvgStyle: svgNode => makeSvgResponsive(svgNode, { visible: true }),
