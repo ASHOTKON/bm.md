@@ -4,6 +4,8 @@ import { provider } from 'std-env'
 
 export interface PlatformEnvironment {
   AliUid?: string
+  EDGEONE_PROJECT_ID?: string
+  EO_MAKERS?: string
 }
 
 export interface PlatformConfig {
@@ -17,7 +19,11 @@ export function resolvePlatformConfig(
   detectedProvider: ProviderName = provider,
 ): PlatformConfig {
   const isAliyunESA = Boolean(environment.AliUid)
-  const isTencentEdgeOne = detectedProvider === 'edgeone_pages'
+  const isEdgeOneProvider = detectedProvider === 'edgeone_pages'
+  const isTencentEdgeOne
+    = isEdgeOneProvider
+      || Boolean(environment.EDGEONE_PROJECT_ID)
+      || Boolean(environment.EO_MAKERS)
 
   if (isAliyunESA) {
     return {
@@ -29,7 +35,7 @@ export function resolvePlatformConfig(
 
   if (isTencentEdgeOne) {
     return {
-      nitroPreset: undefined,
+      nitroPreset: isEdgeOneProvider ? undefined : 'edgeone-pages',
       prerender: false,
       pwaOutDir: '.edgeone/assets',
     }

@@ -34,4 +34,30 @@ describe('resolvePlatformConfig', () => {
       pwaOutDir: '.edgeone/assets',
     })
   })
+
+  it('存在 EDGEONE_PROJECT_ID 时回退识别腾讯 EdgeOne', () => {
+    expect(resolvePlatformConfig({ EDGEONE_PROJECT_ID: 'project-id' }, 'github_actions')).toEqual({
+      nitroPreset: 'edgeone-pages',
+      prerender: false,
+      pwaOutDir: '.edgeone/assets',
+    })
+  })
+
+  it('存在 EO_MAKERS 时回退识别腾讯 EdgeOne', () => {
+    expect(resolvePlatformConfig({ EO_MAKERS: 'true' }, 'github_actions')).toEqual({
+      nitroPreset: 'edgeone-pages',
+      prerender: false,
+      pwaOutDir: '.edgeone/assets',
+    })
+  })
+
+  it('edgeOne 回退变量为空字符串时不误判', () => {
+    expect(
+      resolvePlatformConfig({ EDGEONE_PROJECT_ID: '', EO_MAKERS: '' }, 'github_actions'),
+    ).toEqual({
+      nitroPreset: undefined,
+      prerender: true,
+      pwaOutDir: '.output/public',
+    })
+  })
 })
