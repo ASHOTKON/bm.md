@@ -11,7 +11,7 @@ export default <NitroPreset>{
     publicDir: 'dist/client',
   },
   commands: {
-    // preview: 'esa-cli dev',
+    preview: 'esa-cli dev',
   },
   wasm: { lazy: true },
   rollupConfig: {
