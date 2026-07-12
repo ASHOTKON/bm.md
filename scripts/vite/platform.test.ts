@@ -6,7 +6,7 @@ describe('resolvePlatformConfig', () => {
   it('默认使用 Nitro 自动检测', () => {
     expect(resolvePlatformConfig({})).toEqual({
       nitroPreset: undefined,
-      prerender: false,
+      prerender: true,
       pwaOutDir: '.output/public',
     })
   })
@@ -25,7 +25,7 @@ describe('resolvePlatformConfig', () => {
       TMPDIR: '/dev/shm/tmp',
     })).toEqual({
       nitroPreset: './preset/tencent-edgeone/nitro.config.ts',
-      prerender: false,
+      prerender: true,
       pwaOutDir: '.output/public',
     })
   })

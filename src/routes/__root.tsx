@@ -1,7 +1,9 @@
+import { TanStackDevtools } from '@tanstack/react-devtools'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
 import { ThemeProvider } from 'next-themes'
-import { lazy, Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { NotFound } from '@/components/not-found'
 import { ThemeColorMeta } from '@/components/theme-color-meta'
@@ -15,26 +17,6 @@ import appCss from '../styles.css?url'
 
 // Google Fonts URL - 仅加载 Logo 使用的字符
 const fontUrl = `https://fonts.googleapis.cn/css2?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
-
-const Devtools = env.DEV
-  ? lazy(async () => {
-      const [{ TanStackDevtools }, { TanStackRouterDevtoolsPanel }] = await Promise.all([
-        import('@tanstack/react-devtools'),
-        import('@tanstack/react-router-devtools'),
-      ])
-
-      return {
-        default: function DevtoolsPanel() {
-          return (
-            <TanStackDevtools
-              config={{ position: 'bottom-right' }}
-              plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
-            />
-          )
-        },
-      }
-    })
-  : null
 
 export const Route = createRootRoute({
   beforeLoad: () => {
@@ -120,10 +102,11 @@ function RootDocument() {
             </TooltipProvider>
           </ThemeProvider>
         </MotionConfig>
-        {Devtools && (
-          <Suspense fallback={null}>
-            <Devtools />
-          </Suspense>
+        {env.DEV && (
+          <TanStackDevtools
+            config={{ position: 'bottom-right' }}
+            plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
+          />
         )}
         <Scripts />
         <Toaster />

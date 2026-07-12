@@ -27,7 +27,7 @@ export function resolvePlatformConfig(environment: PlatformEnvironment): Platfor
     nitroPreset: isTencentEdgeOne
       ? './preset/tencent-edgeone/nitro.config.ts'
       : undefined,
-    prerender: false,
+    prerender: true,
     pwaOutDir: '.output/public',
   }
 }
