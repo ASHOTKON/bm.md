@@ -18,6 +18,7 @@ export default <NitroPreset>{
     output: {
       format: 'module',
       entryFileNames: 'server.js',
+      strictExecutionOrder: true,
     },
   },
 }
