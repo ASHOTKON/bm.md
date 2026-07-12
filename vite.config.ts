@@ -46,11 +46,6 @@ const config = defineConfig({
                 keep_vars: true,
               },
             },
-            vercel: {
-              functions: {
-                runtime: 'bun1.x',
-              },
-            },
           })]
         : []),
     tailwindcss(),
