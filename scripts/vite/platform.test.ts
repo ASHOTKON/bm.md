@@ -27,21 +27,11 @@ describe('resolvePlatformConfig', () => {
     })
   })
 
-  it('同时满足 HOME 与 TMPDIR 时选择腾讯 EdgeOne', () => {
-    expect(resolvePlatformConfig({
-      HOME: '/dev/shm/home',
-      TMPDIR: '/dev/shm/tmp',
-    }, 'cloudflare_workers')).toEqual({
-      nitroPreset: './preset/tencent-edgeone/nitro.config.ts',
-      prerender: true,
-      pwaOutDir: '.output/public',
+  it('由 std-env 检测到腾讯 EdgeOne 时使用 Nitro 自动检测', () => {
+    expect(resolvePlatformConfig({}, 'edgeone_pages')).toEqual({
+      nitroPreset: undefined,
+      prerender: false,
+      pwaOutDir: '.edgeone/assets',
     })
-  })
-
-  it.each([
-    { HOME: '/dev/shm/home' },
-    { TMPDIR: '/dev/shm/tmp' },
-  ])('仅满足一个腾讯条件时不误判：%o', (environment) => {
-    expect(resolvePlatformConfig(environment).nitroPreset).toBeUndefined()
   })
 })

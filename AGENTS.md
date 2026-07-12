@@ -66,7 +66,7 @@ pnpm shadcn add shimmer-button --registry @magicui
 `vite.config.ts` 顶层的平台检测属于构建配置例外。修改时必须保留：
 
 - 存在 `AliUid` 时选择阿里云 ESA preset，预渲染首页、`/about`、`/docs/*`，并将 PWA 输出切到 `dist/client`。
-- `HOME=/dev/shm/home` 且 `TMPDIR=/dev/shm/tmp` 时选择腾讯 EdgeOne preset。
+- EdgeOne 的 `EO_PAGES_CI` 由 std-env 识别为 `edgeone_pages`，Nitro 自动选择官方 `edgeone-pages` preset；因官方 Node handler 不兼容本地 prerender preview，禁用 TanStack 构建期预渲染，并将 PWA 输出到 `.edgeone/assets`。
 - 其他环境交给 Nitro 自动检测；不要硬编码成单一平台。
 
 ## React 与 UI 约束

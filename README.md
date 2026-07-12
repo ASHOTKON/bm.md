@@ -76,10 +76,12 @@ bmmd lint article.md --fix
 ```txt
 框架预设: Other
 根目录: ./
-输出目录: .output/public
+输出目录: .edgeone
 编译命令: pnpm run build
 安装命令: pnpm install
 ```
+
+EdgeOne 构建环境由 std-env 自动识别，Nitro 会自动选择官方 preset。
 
 其他环境部署配置参考 [Nitro](https://nitro.build/deploy) 文档。
 

@@ -296,16 +296,15 @@ Markdown 渲染在 Web Worker 中执行，避免阻塞主线程：
 
 ### 环境检测
 
-`scripts/vite/platform.ts` 集中解析部署环境，`vite.config.ts` 使用其结果配置 Nitro、预渲染与 PWA 输出目录。阿里云 ESA 优先；腾讯 EdgeOne 仅在 `HOME` 与 `TMPDIR` 同时匹配时启用：
+`scripts/vite/platform.ts` 集中解析部署环境，`vite.config.ts` 使用其结果配置 Nitro、预渲染与 PWA 输出目录。阿里云 ESA 优先；EdgeOne 的 `EO_PAGES_CI` 由 std-env 识别为 `edgeone_pages`：
 
 ```typescript
 const isAliyunESA = Boolean(environment.AliUid)
-const isTencentEdgeOne = environment.HOME === '/dev/shm/home'
-  && environment.TMPDIR === '/dev/shm/tmp'
+const isTencentEdgeOne = detectedProvider === 'edgeone_pages'
 ```
 
 - 存在 `AliUid` 时使用 `./preset/aliyun-esa/nitro.config.ts`，预渲染 `/`、`/about` 与 `/docs/*`，并将 PWA 输出到 `dist/client`
-- `HOME=/dev/shm/home` 且 `TMPDIR=/dev/shm/tmp` 时使用 `./preset/tencent-edgeone/nitro.config.ts`
+- std-env 检测到 `edgeone_pages` 时不指定 preset，由 Nitro 自动选择官方 `edgeone-pages`；官方 Node handler 不兼容本地 prerender preview，因此禁用 TanStack 构建期预渲染，并将 PWA 输出到 `.edgeone/assets`
 - 其他环境不指定 preset，交由 Nitro 自动检测
 
 ---
