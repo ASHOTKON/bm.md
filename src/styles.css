@@ -186,6 +186,7 @@
     100% {
       transform: translateY(0);
     }
+
     50% {
       transform: translateY(-25%);
     }
@@ -193,5 +194,16 @@
 
   .animate-wave-bounce {
     animation: wave-bounce 1s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

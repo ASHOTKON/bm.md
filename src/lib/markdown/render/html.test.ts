@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { render } from './html'
+import { render, renderPreview } from './html'
+
+function getFirstTag(html: string, tagName: string): string {
+  return html.match(new RegExp(`<${tagName}[^>]*>`))?.[0] ?? ''
+}
+
+function getFirstTagContaining(html: string, tagName: string, text: string): string {
+  const tags: string[] = html.match(new RegExp(`<${tagName}[^>]*>`, 'g')) ?? []
+  return tags.find(tag => tag.includes(text)) ?? ''
+}
 
 describe('markdown -> html render (general)', () => {
   it('renders paragraphs as p elements', async () => {
@@ -37,15 +46,69 @@ describe('markdown -> html render (general)', () => {
 
   it('renders inline math with KaTeX', async () => {
     const html = await render({ markdown: '公式 $E=mc^2$ 很有名' })
+    const katexTag = getFirstTagContaining(html, 'span', 'class="katex"')
 
     expect(html).toContain('class="katex"')
     expect(html).toContain('katex-mathml')
+    expect(katexTag).toContain('class="katex"')
+    expect(katexTag).toContain('data-bm-rich="katex"')
+    expect(katexTag).toContain('data-bm-hash="')
   })
 
   it('renders block math with KaTeX', async () => {
     const html = await render({ markdown: '$$\n\\sum_{i=1}^n i\n$$' })
+    const displayTag = getFirstTagContaining(html, 'span', 'class="katex-display"')
 
     expect(html).toContain('katex-display')
+    expect(html).toContain('katex-mathml')
+    expect(displayTag).toContain('class="katex-display"')
+    expect(displayTag).toContain('data-bm-rich="katex"')
+    expect(displayTag).toContain('data-bm-hash="')
+  })
+
+  it('renders Mermaid blocks as sanitized rich SVG figures', async () => {
+    const markdown = [
+      '```mermaid',
+      'flowchart TD',
+      '  A[开始] --> B[结束]',
+      '```',
+    ].join('\n')
+
+    const html = await render({ markdown })
+    const figureTag = getFirstTag(html, 'figure')
+    const svgTag = getFirstTag(html, 'svg')
+    const markerTag = getFirstTag(html, 'marker')
+
+    expect(figureTag).toContain('class="figure-mermaid"')
+    expect(figureTag).toContain('data-bm-rich="mermaid"')
+    expect(figureTag).toContain('data-bm-hash="')
+    expect(svgTag).toContain('role="img"')
+    expect(svgTag).not.toContain('data-bm-rich')
+    expect(svgTag).toContain('width:100%;max-width:100%;height:auto;')
+    expect(markerTag).toContain('id="bm-mermaid-')
+    expect(html).not.toContain('@import')
+    expect(html).not.toContain('id="arrowhead"')
+  })
+
+  it('keeps SVG ids unique for duplicated Mermaid blocks', async () => {
+    const block = [
+      '```mermaid',
+      'flowchart TD',
+      '  A --> B',
+      '```',
+    ].join('\n')
+    const html = await render({ markdown: `${block}\n\n${block}` })
+    const arrowheadIds = [...html.matchAll(/id="(bm-mermaid-[^"]+-arrowhead)"/g)].map(match => match[1])
+
+    expect(arrowheadIds).toHaveLength(2)
+    expect(new Set(arrowheadIds).size).toBe(2)
+  })
+
+  it('does not render code blocks whose language only contains mermaid text', async () => {
+    const html = await render({ markdown: '```notmermaid\nflowchart TD\n  A --> B\n```' })
+
+    expect(html).not.toContain('figure-mermaid')
+    expect(html).toContain('language-notmermaid')
   })
 
   it('generates footnote references when enabled', async () => {
@@ -80,6 +143,19 @@ describe('markdown -> html render (general)', () => {
     const matches = html.match(/\[1\]/g)
     expect(matches?.length).toBe(2)
     expect(html).not.toContain('[2]')
+  })
+
+  it('does not create external-link footnotes for mailto and tel links', async () => {
+    const html = await render({
+      markdown: '[邮件](mailto:test@example.com) [电话](tel:123)',
+      enableFootnoteLinks: true,
+      platform: 'html',
+    })
+
+    expect(html).toContain('href="mailto:test@example.com"')
+    expect(html).toContain('href="tel:123"')
+    expect(html).not.toContain('footnote-ref')
+    expect(html).not.toContain('References')
   })
 
   it('adds target blank when openLinksInNewWindow is true', async () => {
@@ -172,24 +248,33 @@ describe('markdown -> html render (general)', () => {
   })
 })
 
-describe('platform-specific rendering', () => {
-  it('renders for zhihu platform without errors', async () => {
-    const html = await render({
-      markdown: '# 标题\n\n[链接](https://example.com)',
-      platform: 'zhihu',
+describe('markdown preview rendering', () => {
+  it('returns body HTML and CSS without inlining preview styles', async () => {
+    const preview = await renderPreview({
+      markdown: '## 标题\n\n```js\nconst x = 1\n```',
+      markdownStyle: 'blueprint',
+      codeTheme: 'catppuccin-latte',
+      customCss: '#bm-md h2 { color: red; }',
     })
 
-    expect(html).toContain('标题')
+    expect(preview.html).toContain('<h2')
+    expect(preview.html).toContain('<pre')
+    expect(preview.html).not.toContain('<section id="bm-md">')
+    expect(preview.html).not.toContain('style="')
+    expect(preview.css).toContain('#bm-md')
+    expect(preview.css).toContain('color: red')
   })
 
-  it('renders for juejin platform without errors', async () => {
+  it('keeps public render output inline styled for export and copy', async () => {
     const html = await render({
-      markdown: '# 标题\n\n```js\ncode\n```',
-      platform: 'juejin',
+      markdown: '## 标题\n\n```js\nconst x = 1\n```',
+      markdownStyle: 'blueprint',
+      codeTheme: 'catppuccin-latte',
+      customCss: '#bm-md h2 { color: red; }',
     })
 
-    expect(html).toContain('标题')
-    expect(html).toContain('code')
+    expect(html).toContain('<section id="bm-md"')
+    expect(html).toContain('style="')
   })
 })
 

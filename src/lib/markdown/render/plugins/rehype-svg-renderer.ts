@@ -1,19 +1,23 @@
 import type { Element, Root } from 'hast'
 import type { Plugin, Transformer } from 'unified'
+import type { RichMetadata } from './rich-metadata'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { SKIP, visit } from 'unist-util-visit'
+import { getClassList, getTextContent } from '@/lib/markdown/hast'
+import { createRichMetadata, richData } from './rich-metadata'
+import { prefixSvgIds, sanitizeSvgElement } from './svg-safety'
 
 // SVG 解析器，将 SVG 字符串转换为 HAST 节点
 const svgParser = unified().use(rehypeParse, { fragment: true })
 
-export interface SvgRendererTask {
+interface SvgRendererTask {
   parent: Element
   index: number
   code: string
 }
 
-export interface SvgRendererConfig<TOptions> {
+interface SvgRendererConfig<TOptions> {
   /** 用于匹配代码块的语言标识（如 'mermaid'、'infographic'） */
   languageId: string
   /** figure 元素的类名前缀（如 'figure-mermaid'） */
@@ -26,10 +30,7 @@ export interface SvgRendererConfig<TOptions> {
   adjustSvgStyle?: (svgNode: Element) => void
 }
 
-/**
- * 检测是否为指定语言的代码块
- */
-export function isCodeBlock(node: Element, languageId: string): boolean {
+function isCodeBlock(node: Element, languageId: string): boolean {
   if (node.tagName !== 'pre')
     return false
   const code = node.children.find(
@@ -37,25 +38,21 @@ export function isCodeBlock(node: Element, languageId: string): boolean {
   )
   if (!code)
     return false
-  const className = Array.isArray(code.properties?.className)
-    ? code.properties.className
-    : []
-  return className.some(c => typeof c === 'string' && c.includes(languageId))
+
+  const acceptedClasses = new Set([languageId, `language-${languageId}`, `lang-${languageId}`])
+  return getClassList(code).some(className => acceptedClasses.has(className))
 }
 
 /**
  * 从 pre 元素中提取文本内容
  */
-export function extractText(pre: Element): string {
+function extractText(pre: Element): string {
   const code = pre.children.find(
     (c): c is Element => c.type === 'element' && c.tagName === 'code',
   )
   if (!code)
     return ''
-  return code.children
-    .filter((c): c is { type: 'text', value: string } => c.type === 'text')
-    .map(c => c.value)
-    .join('')
+  return getTextContent(code)
 }
 
 /**
@@ -75,10 +72,11 @@ export function parseSvg(svg: string): Element {
 /**
  * 创建错误状态的 figure 元素
  */
-export function createErrorFigure(
+function createErrorFigure(
   figureClassName: string,
   errorMessage: string,
   code: string,
+  metadata: RichMetadata,
 ): Element {
   return {
     type: 'element',
@@ -86,6 +84,7 @@ export function createErrorFigure(
     properties: {
       'className': [figureClassName, `${figureClassName}-error`],
       'data-error': errorMessage,
+      ...richData(metadata),
     },
     children: [
       {
@@ -108,13 +107,32 @@ export function createErrorFigure(
 /**
  * 创建成功状态的 figure 元素
  */
-export function createFigure(figureClassName: string, svgNode: Element): Element {
+function createFigure(figureClassName: string, svgNode: Element, metadata: RichMetadata): Element {
   return {
     type: 'element',
     tagName: 'figure',
-    properties: { className: [figureClassName] },
+    properties: {
+      className: [figureClassName],
+      ...richData(metadata),
+    },
     children: [svgNode],
   }
+}
+
+function getRichLabel(languageId: string): string {
+  if (languageId === 'mermaid') {
+    return 'Mermaid 图表'
+  }
+  if (languageId === 'infographic') {
+    return 'Infographic 信息图'
+  }
+  return `${languageId} 图表`
+}
+
+function applySvgAccessibility(svgNode: Element, languageId: string): void {
+  const properties = svgNode.properties as Record<string, unknown>
+  properties.role = properties.role ?? 'img'
+  properties['aria-label'] = properties['aria-label'] ?? getRichLabel(languageId)
 }
 
 /**
@@ -148,22 +166,28 @@ export function createSvgRendererPlugin<TOptions>(
       }
 
       await Promise.all(
-        tasks.map(async ({ parent, index, code }) => {
+        tasks.map(async ({ parent, index, code }, ordinal) => {
+          const metadata = createRichMetadata(languageId, code)
+
           try {
             const svgRaw = await render(code, options)
             const svg = extractSvg ? extractSvg(svgRaw) : svgRaw
             const svgNode = parseSvg(svg)
 
+            sanitizeSvgElement(svgNode)
+            prefixSvgIds(svgNode, `bm-${languageId}-${metadata.hash}-${ordinal}-`)
+
             if (adjustSvgStyle) {
               adjustSvgStyle(svgNode)
             }
 
-            parent.children.splice(index, 1, createFigure(figureClassName, svgNode))
+            applySvgAccessibility(svgNode, languageId)
+            parent.children.splice(index, 1, createFigure(figureClassName, svgNode, metadata))
           }
           catch (error) {
             console.error(`${languageId} render error:`, error)
             const errorMessage = error instanceof Error ? error.message : 'Render failed'
-            parent.children.splice(index, 1, createErrorFigure(figureClassName, errorMessage, code))
+            parent.children.splice(index, 1, createErrorFigure(figureClassName, errorMessage, code, metadata))
           }
         }),
       )

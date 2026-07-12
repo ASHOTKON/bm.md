@@ -73,7 +73,7 @@ const rehypeFigureWrapper: Plugin<[], Root> = () => {
       if (node.tagName === 'table') {
         if (parentEl.tagName === 'figure')
           return
-        const classNames = node.properties?.className
+        const classNames: unknown = node.properties?.className
         const classList = Array.isArray(classNames) ? classNames : typeof classNames === 'string' ? classNames.split(/\s+/) : []
         if (classList.includes('frontmatter-table'))
           return

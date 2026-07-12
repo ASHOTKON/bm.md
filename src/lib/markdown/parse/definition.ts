@@ -4,7 +4,7 @@ import { INPUT_SIZE_ERROR, MAX_INPUT_SIZE } from '../constants'
 import { outputOption } from '../types/definition'
 
 export const parseDefinition = {
-  name: 'parse',
+  name: 'parse' as const,
   title: '解析 HTML 为 Markdown',
   description: '将 HTML 内容反向转换为 Markdown 格式。适用于从网页复制内容、导入已有文章、或将富文本转换为 Markdown 进行编辑。会自动清理不安全的 HTML 标签。',
   inputSchema: z.object({

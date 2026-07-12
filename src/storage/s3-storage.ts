@@ -29,7 +29,7 @@ export class S3Storage implements StorageProvider {
   }
 
   async upload(options: UploadOptions): Promise<UploadResult> {
-    const { file, filename, contentType } = options
+    const { file, extension, contentType } = options
     const { S3_ENDPOINT, S3_BUCKET, S3_PUBLIC_BASE_URL } = env
 
     if (!S3_ENDPOINT) {
@@ -38,8 +38,7 @@ export class S3Storage implements StorageProvider {
 
     try {
       // 生成唯一的文件名
-      const ext = filename.split('.').at(-1) || 'png'
-      const key = `${new Date().toISOString().split('T')[0]}/${crypto.randomUUID()}.${ext}`
+      const key = `${new Date().toISOString().split('T')[0]}/${crypto.randomUUID()}.${extension}`
 
       // 上传到 S3
       const arrayBuffer = await file.arrayBuffer()

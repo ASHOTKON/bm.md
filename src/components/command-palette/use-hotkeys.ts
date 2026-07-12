@@ -8,7 +8,7 @@ interface HotkeyHandler {
 }
 
 export function useHotkeys(handlers: HotkeyHandler[]) {
-  const { toggle } = useCommandPaletteStore()
+  const toggle = useCommandPaletteStore(state => state.toggle)
   const handlersRef = useRef(handlers)
 
   useEffect(() => {
@@ -28,14 +28,15 @@ export function useHotkeys(handlers: HotkeyHandler[]) {
         return
       }
 
-      for (const { key, shift = false, handler } of handlersRef.current) {
+      for (const hotkey of handlersRef.current) {
+        const shift = hotkey.shift ?? false
         if (
           isMod
-          && event.key.toLowerCase() === key.toLowerCase()
+          && event.key.toLowerCase() === hotkey.key.toLowerCase()
           && event.shiftKey === shift
         ) {
           event.preventDefault()
-          handler()
+          hotkey.handler()
           return
         }
       }

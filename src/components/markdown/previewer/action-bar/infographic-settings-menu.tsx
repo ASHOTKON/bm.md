@@ -4,16 +4,13 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePreviewStore } from '@/stores/preview'
 import { infographicPalettes, infographicThemes } from '@/themes/infographic-theme'
+import { RadioMenuGroup } from './radio-menu'
 
 const infographicTooltip = '信息图设置'
 const infographicAriaLabel = '信息图设置'
@@ -47,39 +44,19 @@ export function InfographicSettingsMenu() {
         <TooltipContent>{infographicTooltip}</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>信息图主题</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={infographic.theme} onValueChange={handleThemeChange}>
-            {infographicThemes.map(theme => (
-              <DropdownMenuRadioItem
-                key={theme.id}
-                value={theme.id}
-                className="cursor-pointer"
-              >
-                {theme.name}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-
+        <RadioMenuGroup
+          label="信息图主题"
+          items={infographicThemes}
+          value={infographic.theme}
+          onValueChange={handleThemeChange}
+        />
         <DropdownMenuSeparator />
-
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>信息图配色</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={infographic.palette} onValueChange={handlePaletteChange}>
-            {infographicPalettes.map(palette => (
-              <DropdownMenuRadioItem
-                key={palette.id}
-                value={palette.id}
-                className="cursor-pointer"
-              >
-                {palette.name}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
+        <RadioMenuGroup
+          label="信息图配色"
+          items={infographicPalettes}
+          value={infographic.palette}
+          onValueChange={handlePaletteChange}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   )

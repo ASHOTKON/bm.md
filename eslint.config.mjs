@@ -13,8 +13,13 @@ export default antfu({
     'bin/**',
     '**/*.gen.ts',
     'src/components/ui/**',
-    'src/hooks/use-mobile.tsx',
+    'src/hooks/use-mobile.ts',
   ],
+}, {
+  files: ['**/*.md'],
+  rules: {
+    'markdown/no-multiple-h1': 'off',
+  },
 }, {
   plugins: {
     'better-tailwindcss': eslintPluginBetterTailwindcss,
@@ -26,6 +31,6 @@ export default antfu({
   },
   rules: {
     ...eslintPluginBetterTailwindcss.configs['recommended-warn'].rules,
-    'better-tailwindcss/no-unregistered-classes': 'off',
+    'better-tailwindcss/no-unknown-classes': 'off',
   },
 })

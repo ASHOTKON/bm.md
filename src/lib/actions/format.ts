@@ -2,12 +2,14 @@ import { toast } from 'sonner'
 
 export async function formatMarkdown(
   content: string,
-  setContent: (content: string) => void,
+  setContent: (content: string) => boolean | void,
 ) {
   try {
     const { markdown } = await import('@/lib/markdown/browser')
     const { result: formatted } = await markdown.lint({ markdown: content })
-    setContent(formatted)
+    if (setContent(formatted) === false) {
+      return
+    }
     toast.success('格式化成功')
   }
   catch (error) {

@@ -1,6 +1,6 @@
-import { useFilesStore } from '@/stores/files'
+import { importFilesAsNewTabs } from '@/lib/file-importer'
 
-const LAUNCH_HANDLED_KEY = 'bm.md.launch-handled'
+const processingLaunches = new Set<string>()
 
 export function initFileHandler() {
   if (!('launchQueue' in window))
@@ -10,37 +10,31 @@ export function initFileHandler() {
     if (!launchParams.files?.length)
       return
 
-    // 使用 sessionStorage 防止刷新后重复处理
-    const handledKey = launchParams.files
+    const launchKey = JSON.stringify(launchParams.files
       .map(f => f.name)
-      .sort()
-      .join('|')
-    const lastHandled = sessionStorage.getItem(LAUNCH_HANDLED_KEY)
-    if (lastHandled === handledKey) {
+      .sort())
+    if (processingLaunches.has(launchKey)) {
       return
     }
-    sessionStorage.setItem(LAUNCH_HANDLED_KEY, handledKey)
+    processingLaunches.add(launchKey)
 
-    const { createFile, switchFile } = useFilesStore.getState()
-    let lastCreatedId: string | null = null
+    try {
+      const files = await Promise.all(
+        launchParams.files.map(async (fileHandle): Promise<File | null> => {
+          try {
+            return await fileHandle.getFile()
+          }
+          catch (err) {
+            console.error('[bm.md] 无法读取文件:', err)
+            return null
+          }
+        }),
+      )
 
-    for (const fileHandle of launchParams.files) {
-      try {
-        const file = await fileHandle.getFile()
-        if (!file.name.match(/\.(md|markdown|mdown|mkd)$/i))
-          continue
-
-        const content = await file.text()
-        const id = await createFile(file.name, content)
-        lastCreatedId = id
-      }
-      catch (err) {
-        console.error('[bm.md] 无法读取文件:', err)
-      }
+      await importFilesAsNewTabs(files.filter((file): file is File => file !== null))
     }
-
-    if (lastCreatedId) {
-      await switchFile(lastCreatedId)
+    finally {
+      processingLaunches.delete(launchKey)
     }
   })
 }

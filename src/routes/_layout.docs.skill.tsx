@@ -47,13 +47,13 @@ function SkillModal() {
               </ItemDescription>
             </ItemContent>
             <ItemActions>
-              <CopyButton text={installCommand} />
+              <CopyButton text={installCommand} ariaLabel="复制安装命令" />
             </ItemActions>
           </Item>
 
-          <div className="relative rounded-md bg-muted">
-            <CopyButton text={markdown} className="absolute top-2 right-2" />
-            <pre className="overflow-x-auto p-3 text-xs">
+          <div className="relative rounded-none bg-muted">
+            <CopyButton text={markdown} className="absolute top-2 right-2" ariaLabel="复制技能内容" />
+            <pre className="overflow-x-auto p-3 pr-12 text-xs">
               <code>{markdown}</code>
             </pre>
           </div>

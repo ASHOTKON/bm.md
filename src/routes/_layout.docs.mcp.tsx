@@ -2,7 +2,6 @@ import type { PageMeta } from '@/lib/seo'
 import { createFileRoute } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
 import { getClients, transformConfig } from 'mcp-config/src/index.js'
-import { useMemo } from 'react'
 
 import { CopyButton } from '@/components/copy-button'
 import PageDialog from '@/components/dialog/page'
@@ -30,18 +29,16 @@ export const Route = createFileRoute('/_layout/docs/mcp')({
 })
 
 function McpConfigContent() {
-  const mcpUrl = useMemo(() => {
-    const baseUrl = env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-    return `${baseUrl}/mcp`
-  }, [])
+  const baseUrl = env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+  const mcpUrl = `${baseUrl}/mcp`
 
-  const clients = useMemo(() => getClients(), [])
+  const clients = getClients()
 
-  const serverConfig = useMemo(() => ({
+  const serverConfig = {
     name: 'bm-md',
     type: 'http' as const,
     url: mcpUrl,
-  }), [mcpUrl])
+  }
 
   const getClientConfig = (clientSlug: string) => {
     try {
@@ -60,10 +57,10 @@ function McpConfigContent() {
     <div className="space-y-4">
       {/* MCP Server 地址 */}
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Server 地址</p>
-        <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+        <p className="text-sm text-muted-foreground">MCP Server 地址</p>
+        <div className="flex items-center gap-2 rounded-none bg-muted px-3 py-2">
           <code className="flex-1 truncate text-sm">{mcpUrl}</code>
-          <CopyButton text={mcpUrl} className="shrink-0" />
+          <CopyButton text={mcpUrl} className="shrink-0" ariaLabel="复制 MCP Server 地址" />
         </div>
       </div>
 
@@ -90,12 +87,12 @@ function McpConfigContent() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2">
-                    <div className="relative rounded-md bg-muted">
-                      <pre className="overflow-x-auto p-3 text-xs">
+                    <div className="relative rounded-none bg-muted">
+                      <pre className="overflow-x-auto p-3 pr-12 text-xs">
                         <code>{config}</code>
                       </pre>
                       <div className="absolute top-2 right-2">
-                        <CopyButton text={config} />
+                        <CopyButton text={config} ariaLabel={`复制 ${client.name} 配置`} />
                       </div>
                     </div>
                     {client.docsUrl && (
@@ -112,7 +109,7 @@ function McpConfigContent() {
                         `}
                       >
                         查看文档
-                        <ExternalLink className="size-3" />
+                        <ExternalLink className="size-3" aria-hidden="true" />
                       </a>
                     )}
                   </div>

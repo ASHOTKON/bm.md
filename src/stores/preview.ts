@@ -1,4 +1,3 @@
-import type { Platform } from '@/lib/markdown/render/adapters'
 import type { InfographicPaletteId, InfographicThemeId } from '@/themes/infographic-theme'
 import type { MermaidThemeId } from '@/themes/mermaid-theme'
 import { create } from 'zustand'
@@ -7,7 +6,8 @@ import { persist } from 'zustand/middleware'
 export const PREVIEW_WIDTH_MOBILE = 415
 export const PREVIEW_WIDTH_DESKTOP = 768
 
-type PreviewWidth = typeof PREVIEW_WIDTH_MOBILE | typeof PREVIEW_WIDTH_DESKTOP
+export type PreviewWidth = typeof PREVIEW_WIDTH_MOBILE | typeof PREVIEW_WIDTH_DESKTOP
+export type PreviewColorScheme = 'light' | 'dark'
 
 export interface InfographicSettings {
   theme: InfographicThemeId
@@ -18,11 +18,14 @@ interface PreviewState {
   hasHydrated: boolean
   setHasHydrated: (value: boolean) => void
 
+  renderedSignature: string | null
+  setRenderedSignature: (signature: string | null) => void
+
   previewWidth: PreviewWidth
   setPreviewWidth: (width: PreviewWidth) => void
 
-  userPreferredWidth: PreviewWidth
-  setUserPreferredWidth: (width: PreviewWidth) => void
+  previewColorScheme: PreviewColorScheme
+  togglePreviewColorScheme: () => void
 
   markdownStyle: string
   setMarkdownStyle: (id: string) => void
@@ -38,61 +41,82 @@ interface PreviewState {
 
   customCss: string
   setCustomCss: (css: string) => void
+}
 
-  renderedHtmlMap: Partial<Record<Platform, string>>
-  setRenderedHtml: (platform: Platform, html: string) => void
-  getRenderedHtml: (platform: Platform) => string
-  clearRenderedHtmlCache: () => void
+export function partializePreviewState(state: PreviewState) {
+  return {
+    previewWidth: state.previewWidth,
+    previewColorScheme: state.previewColorScheme,
+    markdownStyle: state.markdownStyle,
+    codeTheme: state.codeTheme,
+    mermaidTheme: state.mermaidTheme,
+    infographic: state.infographic,
+    customCss: state.customCss,
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isPreviewWidth(value: unknown): value is PreviewWidth {
+  return value === PREVIEW_WIDTH_MOBILE || value === PREVIEW_WIDTH_DESKTOP
+}
+
+export function migratePreviewState(persistedState: unknown) {
+  if (!isRecord(persistedState)) {
+    return { previewWidth: PREVIEW_WIDTH_MOBILE }
+  }
+
+  const { userPreferredWidth, ...settings } = persistedState
+  return {
+    ...settings,
+    previewWidth: isPreviewWidth(userPreferredWidth)
+      ? userPreferredWidth
+      : PREVIEW_WIDTH_MOBILE,
+  }
 }
 
 export const usePreviewStore = create<PreviewState>()(
   persist(
-    (set, get) => ({
+    set => ({
       hasHydrated: false,
       setHasHydrated: hasHydrated => set({ hasHydrated }),
+
+      renderedSignature: null,
+      setRenderedSignature: renderedSignature => set({ renderedSignature }),
 
       previewWidth: PREVIEW_WIDTH_MOBILE,
       setPreviewWidth: previewWidth => set({ previewWidth }),
 
-      userPreferredWidth: PREVIEW_WIDTH_MOBILE,
-      setUserPreferredWidth: userPreferredWidth => set({ previewWidth: userPreferredWidth, userPreferredWidth }),
+      previewColorScheme: 'light',
+      togglePreviewColorScheme: () => set(state => ({
+        previewColorScheme: state.previewColorScheme === 'dark' ? 'light' : 'dark',
+      })),
 
       markdownStyle: 'ayu-light',
-      setMarkdownStyle: markdownStyle => set({ markdownStyle, renderedHtmlMap: {} }),
+      setMarkdownStyle: markdownStyle => set({ markdownStyle }),
 
       codeTheme: 'kimbie-light',
-      setCodeTheme: codeTheme => set({ codeTheme, renderedHtmlMap: {} }),
+      setCodeTheme: codeTheme => set({ codeTheme }),
 
       mermaidTheme: '',
-      setMermaidTheme: mermaidTheme => set({ mermaidTheme, renderedHtmlMap: {} }),
+      setMermaidTheme: mermaidTheme => set({ mermaidTheme }),
 
       infographic: { theme: 'default', palette: 'antv' },
       setInfographic: settings => set(state => ({
         infographic: { ...state.infographic, ...settings },
-        renderedHtmlMap: {},
       })),
 
       customCss: '',
-      setCustomCss: customCss => set({ customCss, renderedHtmlMap: {} }),
-
-      renderedHtmlMap: {},
-      setRenderedHtml: (platform, html) => set(state => ({
-        renderedHtmlMap: { ...state.renderedHtmlMap, [platform]: html },
-      })),
-      getRenderedHtml: platform => get().renderedHtmlMap[platform] ?? '',
-      clearRenderedHtmlCache: () => set({ renderedHtmlMap: {} }),
+      setCustomCss: customCss => set({ customCss }),
     }),
     {
       name: 'bm.md.preview',
+      version: 1,
       skipHydration: true,
-      partialize: state => ({
-        userPreferredWidth: state.userPreferredWidth,
-        markdownStyle: state.markdownStyle,
-        codeTheme: state.codeTheme,
-        mermaidTheme: state.mermaidTheme,
-        infographic: state.infographic,
-        customCss: state.customCss,
-      }),
+      partialize: partializePreviewState,
+      migrate: migratePreviewState,
       onRehydrateStorage: state => (rehydratedState, error) => {
         if (error) {
           console.error('Zustand preview rehydration error:', error)

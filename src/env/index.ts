@@ -6,10 +6,24 @@
  * - PRIVATE：运行时惰性读取，不会泄露到客户端，仅服务端可用
  */
 
-function getPrivate(key: string): string | undefined {
+export const privateEnvKeys = [
+  'S3_ENDPOINT',
+  'S3_BUCKET',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'S3_REGION',
+  'S3_PUBLIC_BASE_URL',
+  'DC_UPLOAD_URL',
+  'ANALYTICS_SCRIPT_URL',
+  'ANALYTICS_SITE_ID',
+] as const
+
+type PrivateEnvKey = typeof privateEnvKeys[number]
+
+function getPrivate(key: PrivateEnvKey): string | undefined {
   // 优先从 EdgeKV 缓存获取
   if (globalThis.edgeKVCache && key in globalThis.edgeKVCache) {
-    return globalThis.edgeKVCache[key] as string
+    return globalThis.edgeKVCache[key]
   }
   // 从 process.env 获取
   if (typeof process !== 'undefined' && process.env?.[key]) {
@@ -20,6 +34,7 @@ function getPrivate(key: string): string | undefined {
 
 export const env = {
   // PUBLIC（客户端可用，打包时内联）
+  DEV: import.meta.env.DEV,
   VITE_APP_URL: import.meta.env.VITE_APP_URL as string | undefined,
   VITE_API_URL: import.meta.env.VITE_API_URL as string | undefined,
 

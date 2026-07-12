@@ -1,9 +1,10 @@
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/message-port'
-import { router } from './router'
+import { logSafeError } from '@/lib/log-safe-error'
+import { workerRouter } from './router'
 
-const handler = new RPCHandler(router, {
-  interceptors: [onError(console.error)],
+const handler = new RPCHandler(workerRouter, {
+  interceptors: [onError(error => logSafeError('Markdown worker error', error))],
 })
 
 handler.upgrade(globalThis.self as unknown as MessagePort)

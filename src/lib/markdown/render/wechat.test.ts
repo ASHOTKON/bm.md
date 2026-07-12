@@ -39,6 +39,17 @@ describe('wechat render adapter', () => {
     expect(html).toContain('References')
   })
 
+  it('reuses footnote id for duplicate links', async () => {
+    const html = await render({
+      markdown: '[链接1](https://example.com) 和 [链接2](https://example.com)',
+      platform: 'wechat',
+    })
+
+    expect(html.match(/\[1\]/g)).toHaveLength(2)
+    expect(html).not.toContain('[2]')
+    expect(html.match(/https:\/\/example\.com/g)).toHaveLength(1)
+  })
+
   it('keeps nested lists valid', async () => {
     const html = await render({
       markdown: '- a\n  - b',

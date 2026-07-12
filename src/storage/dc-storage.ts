@@ -22,12 +22,13 @@ export class DCStorage implements StorageProvider {
   }
 
   async upload(options: UploadOptions): Promise<UploadResult> {
-    const { file, filename } = options
+    const { file, extension, contentType } = options
 
     try {
       // 构造 FormData，DC 使用 "image" 作为字段名
       const formData = new FormData()
-      formData.append('image', file, filename)
+      const normalizedFile = new Blob([file], { type: contentType })
+      formData.append('image', normalizedFile, `image.${extension}`)
 
       const response = await fetch(this.uploadUrl, {
         method: 'POST',

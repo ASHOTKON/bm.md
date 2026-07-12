@@ -1,8 +1,6 @@
 import type { Pluggable } from 'unified'
 import type { AdapterOptions, Platform, PlatformAdapter } from './types'
-import { juejinAdapter } from './juejin'
 import { wechatAdapter } from './wechat'
-import { zhihuAdapter } from './zhihu'
 
 const htmlAdapter: PlatformAdapter = {
   id: 'html',
@@ -13,8 +11,6 @@ const htmlAdapter: PlatformAdapter = {
 const adapters: Record<Platform, PlatformAdapter> = {
   html: htmlAdapter,
   wechat: wechatAdapter,
-  zhihu: zhihuAdapter,
-  juejin: juejinAdapter,
 }
 
 export function getAdapterPlugins(platform: Platform, options?: AdapterOptions): Pluggable[] {

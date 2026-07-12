@@ -4,8 +4,6 @@ import { platformConfig } from '@/config'
 import { trackEvent } from '@/lib/analytics'
 import { copyHtml } from '@/lib/clipboard'
 
-const developingPlatforms: SupportedPlatform[] = ['zhihu', 'juejin']
-
 interface CopyPlatformOptions {
   platform: SupportedPlatform
   markdownStyle: string
@@ -27,11 +25,6 @@ export async function copyPlatform({
   source,
   getHtml,
 }: CopyPlatformOptions) {
-  if (developingPlatforms.includes(platform)) {
-    toast.info('功能开发中，敬请期待')
-    return
-  }
-
   const config = platformConfig[platform]
   try {
     const html = await getHtml()
@@ -55,6 +48,6 @@ export async function copyPlatform({
     }
   }
   catch {
-    toast.error('渲染失败')
+    toast.error('复制失败，请稍后重试')
   }
 }

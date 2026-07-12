@@ -5,6 +5,8 @@
  * - 脚本不存在时静默失败
  */
 
+import { env } from '@/env'
+
 interface RybbitGlobal {
   event: (name: string, properties?: Record<string, unknown>) => void
 }
@@ -28,7 +30,7 @@ export function trackEvent(
   source: string,
   properties?: Record<string, unknown>,
 ): void {
-  if (import.meta.env.DEV)
+  if (env.DEV)
     return
   if (typeof window === 'undefined' || !window.rybbit?.event)
     return

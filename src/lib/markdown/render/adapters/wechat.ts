@@ -3,6 +3,8 @@ import type { Plugin } from 'unified'
 import type { PlatformAdapter } from './types'
 
 import { visit } from 'unist-util-visit'
+import { getTextContent, hasChildren, isElement } from '@/lib/markdown/hast'
+import { createFootnoteReference, createFootnoteSection } from '../plugins/footnote-hast'
 
 interface FootnoteLink {
   id: number
@@ -27,30 +29,8 @@ function shouldSkipFootnote(href: string): boolean {
     || href.startsWith('../')
 }
 
-function isElement(node: unknown): node is Element {
-  return !!node && typeof node === 'object' && (node as Element).type === 'element'
-}
-
-function hasChildren(node: unknown): node is Root | Element {
-  return !!node && typeof node === 'object' && Array.isArray((node as Root).children)
-}
-
 function extractLinkText(node: Element): string {
-  const texts: string[] = []
-  const walk = (n: Element | Text) => {
-    if (n.type === 'text') {
-      texts.push(n.value)
-    }
-    else if (n.type === 'element' && n.children) {
-      for (const child of n.children) {
-        if (child.type === 'text' || child.type === 'element') {
-          walk(child)
-        }
-      }
-    }
-  }
-  walk(node)
-  return texts.join('').trim() || (typeof node.properties?.href === 'string' ? node.properties.href : '')
+  return getTextContent(node).trim() || (typeof node.properties?.href === 'string' ? node.properties.href : '')
 }
 
 /**
@@ -268,55 +248,32 @@ const rehypeWechatFootnoteLinks: Plugin<[WechatFootnoteLinkOptions?], Root> = (o
         links.push({ id, href, text: extractLinkText(node) })
       }
 
-      parent.children.splice(index + 1, 0, {
-        type: 'element',
-        tagName: 'sup',
-        properties: { className: ['footnote-ref'] },
-        children: [{ type: 'text', value: `[${id}]` }],
-      })
+      parent.children.splice(index + 1, 0, createFootnoteReference(id))
     })
 
     if (links.length === 0) {
       return
     }
 
-    tree.children.push({
+    tree.children.push(createFootnoteSection(referenceTitle, links.map(link => ({
       type: 'element',
-      tagName: 'section',
-      properties: { className: ['footnotes'], dataFootnotes: '' },
+      tagName: 'li',
+      properties: {},
       children: [
         {
           type: 'element',
-          tagName: 'h4',
+          tagName: 'span',
           properties: {},
-          children: [{ type: 'text', value: referenceTitle }],
+          children: [{ type: 'text', value: `${link.text || link.href}: ` }],
         },
         {
           type: 'element',
-          tagName: 'ol',
-          properties: {},
-          children: links.map(link => ({
-            type: 'element',
-            tagName: 'li',
-            properties: {},
-            children: [
-              {
-                type: 'element',
-                tagName: 'span',
-                properties: {},
-                children: [{ type: 'text', value: `${link.text || link.href}: ` }],
-              },
-              {
-                type: 'element',
-                tagName: 'span',
-                properties: { style: 'word-break: break-all;' },
-                children: [{ type: 'text', value: link.href }],
-              },
-            ],
-          } as Element)),
+          tagName: 'span',
+          properties: { style: 'word-break: break-all;' },
+          children: [{ type: 'text', value: link.href }],
         },
       ],
-    })
+    } as Element))))
   }
 }
 

@@ -1,62 +1,60 @@
 import type { Platform } from '@/lib/markdown/render/adapters'
-import { useCallback, useState } from 'react'
-import { getMarkdownLocaleTexts } from '@/lib/locale'
+import { useState } from 'react'
+import { renderPlatformHtml } from '@/lib/markdown/client-render'
 import { useEditorStore } from '@/stores/editor'
-import { useFilesStore } from '@/stores/files'
+import { isFileContentReady, useFilesStore } from '@/stores/files'
 import { usePreviewStore } from '@/stores/preview'
 
 export interface PlatformCopyResult {
   getHtml: () => Promise<string>
   isLoading: boolean
-  error: Error | null
+  isReady: boolean
 }
 
 export function usePlatformCopy(platform: Platform): PlatformCopyResult {
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  const isReady = useFilesStore(isFileContentReady)
 
-  const content = useFilesStore(state => state.currentContent)
-  const markdownStyle = usePreviewStore(state => state.markdownStyle)
-  const codeTheme = usePreviewStore(state => state.codeTheme)
-  const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
-  const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)
-  const getRenderedHtml = usePreviewStore(state => state.getRenderedHtml)
-  const setRenderedHtml = usePreviewStore(state => state.setRenderedHtml)
-
-  const getHtml = useCallback(async (): Promise<string> => {
-    const cached = getRenderedHtml(platform)
-    if (cached) {
-      setError(null)
-      return cached
+  const getHtml = async (): Promise<string> => {
+    const filesState = useFilesStore.getState()
+    if (!isFileContentReady(filesState)) {
+      throw new Error('文件仍在加载')
     }
 
     setIsLoading(true)
-    setError(null)
 
     try {
-      const { markdown } = await import('@/lib/markdown/browser')
-      const result = await markdown.render({
-        markdown: content,
+      const { currentContent: content } = filesState
+      const {
         markdownStyle,
         codeTheme,
+        mermaidTheme,
+        infographic,
+        customCss,
+      } = usePreviewStore.getState()
+      const { enableFootnoteLinks, openLinksInNewWindow } = useEditorStore.getState()
+
+      return await renderPlatformHtml({
+        platform,
+        content,
+        markdownStyle,
+        codeTheme,
+        mermaidTheme,
+        infographicTheme: infographic.theme,
+        infographicPalette: infographic.palette,
+        customCss,
         enableFootnoteLinks,
         openLinksInNewWindow,
-        platform,
-        ...getMarkdownLocaleTexts(),
       })
-      setRenderedHtml(platform, result.result)
-      return result.result
     }
     catch (err) {
-      const error = err instanceof Error ? err : new Error('渲染失败')
-      setError(error)
       console.error(`[${platform}] 渲染失败:`, err)
-      throw error
+      throw err instanceof Error ? err : new Error('渲染失败')
     }
     finally {
       setIsLoading(false)
     }
-  }, [content, markdownStyle, codeTheme, enableFootnoteLinks, openLinksInNewWindow, platform, getRenderedHtml, setRenderedHtml])
+  }
 
-  return { getHtml, isLoading, error }
+  return { getHtml, isLoading, isReady }
 }

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { usePreviewStore } from './preview'
 
 export interface EditorState {
   // Scroll
@@ -49,16 +48,10 @@ export const useEditorStore = create<EditorState>()(
 
       // Settings
       enableFootnoteLinks: true,
-      setEnableFootnoteLinks: (enable) => {
-        set({ enableFootnoteLinks: enable })
-        usePreviewStore.getState().clearRenderedHtmlCache()
-      },
+      setEnableFootnoteLinks: enable => set({ enableFootnoteLinks: enable }),
 
       openLinksInNewWindow: true,
-      setOpenLinksInNewWindow: (enable) => {
-        set({ openLinksInNewWindow: enable })
-        usePreviewStore.getState().clearRenderedHtmlCache()
-      },
+      setOpenLinksInNewWindow: enable => set({ openLinksInNewWindow: enable }),
 
       enableScrollSync: true,
       setEnableScrollSync: enable => set({ enableScrollSync: enable }),
@@ -66,6 +59,30 @@ export const useEditorStore = create<EditorState>()(
     {
       name: 'bm.md.editor',
       skipHydration: true,
+      partialize: state => ({
+        enableFootnoteLinks: state.enableFootnoteLinks,
+        openLinksInNewWindow: state.openLinksInNewWindow,
+        enableScrollSync: state.enableScrollSync,
+      }),
+      merge: (persistedState, currentState) => {
+        const settings = persistedState as Partial<Pick<
+          EditorState,
+          'enableFootnoteLinks' | 'openLinksInNewWindow' | 'enableScrollSync'
+        >>
+
+        return {
+          ...currentState,
+          enableFootnoteLinks: typeof settings.enableFootnoteLinks === 'boolean'
+            ? settings.enableFootnoteLinks
+            : currentState.enableFootnoteLinks,
+          openLinksInNewWindow: typeof settings.openLinksInNewWindow === 'boolean'
+            ? settings.openLinksInNewWindow
+            : currentState.openLinksInNewWindow,
+          enableScrollSync: typeof settings.enableScrollSync === 'boolean'
+            ? settings.enableScrollSync
+            : currentState.enableScrollSync,
+        }
+      },
     },
   ),
 )

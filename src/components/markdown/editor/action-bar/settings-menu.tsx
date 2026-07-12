@@ -18,7 +18,14 @@ const settingsTooltip = '编辑器设置'
 const settingsAriaLabel = '编辑器设置'
 
 export function SettingsMenu() {
-  const store = useEditorStore()
+  const enableFootnoteLinks = useEditorStore(state => state.enableFootnoteLinks)
+  const openLinksInNewWindow = useEditorStore(state => state.openLinksInNewWindow)
+  const enableScrollSync = useEditorStore(state => state.enableScrollSync)
+  const settings = {
+    enableFootnoteLinks,
+    openLinksInNewWindow,
+    enableScrollSync,
+  }
 
   return (
     <DropdownMenu>
@@ -45,8 +52,10 @@ export function SettingsMenu() {
               {'separator' in item && item.separator && <DropdownMenuSeparator />}
               <DropdownMenuCheckboxItem
                 className="cursor-pointer"
-                checked={store[item.storeKey]}
-                onCheckedChange={store[item.setterKey]}
+                checked={settings[item.storeKey]}
+                onCheckedChange={(checked) => {
+                  useEditorStore.getState()[item.setterKey](checked)
+                }}
               >
                 {item.label}
               </DropdownMenuCheckboxItem>

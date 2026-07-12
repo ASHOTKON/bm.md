@@ -4,12 +4,12 @@ import PageDialog from '@/components/dialog/page'
 import { createPageHead } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 
-import html from '@/README.md'
+import README_HTML from '@/README.md'
 
 export const Route = createFileRoute('/_layout/about')({
   loader: () => {
     const meta: PageMeta = { title: '关于' }
-    return { html, meta }
+    return { meta }
   },
   head: ({ loaderData, match }) => loaderData
     ? createPageHead({ pathname: match.pathname, meta: loaderData.meta })
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_layout/about')({
 })
 
 function AboutModal() {
-  const { html, meta } = Route.useLoaderData()
+  const { meta } = Route.useLoaderData()
   return (
     <PageDialog
       title={meta.title}
@@ -34,8 +34,8 @@ function AboutModal() {
             `,
             'max-w-none',
           )}
-          // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-          dangerouslySetInnerHTML={{ __html: html }}
+          // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
+          dangerouslySetInnerHTML={{ __html: README_HTML }}
         />
       )}
     />

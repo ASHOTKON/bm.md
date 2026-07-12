@@ -1,9 +1,14 @@
+allowBuilds:
+  core-js: true
+  esbuild: true
+  msw: true
+  simple-git-hooks: true
+
 catalogMode: manual
 
-onlyBuiltDependencies:
-  - core-js
-  - esbuild
-  - msw
-  - simple-git-hooks
+overrides:
+  glob: 11.1.0
+  serialize-javascript: 7.0.5
+  workbox-build: 7.4.1
 
 shellEmulator: true

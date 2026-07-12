@@ -1,6 +1,8 @@
-import type { Element, Root, Text } from 'hast'
+import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
 import { visit } from 'unist-util-visit'
+import { getTextContent } from '@/lib/markdown/hast'
+import { createFootnoteReference, createFootnoteSection } from './footnote-hast'
 
 interface FootnoteLink {
   id: number
@@ -33,30 +35,18 @@ const rehypeFootnoteLinks: Plugin<[Options?], Root> = (options = {}) => {
       if (seenUrls.has(href)) {
         const existingLink = links.find(l => l.href === href)
         if (existingLink && parent && typeof index === 'number') {
-          const sup: Element = {
-            type: 'element',
-            tagName: 'sup',
-            properties: { className: ['footnote-ref'] },
-            children: [{ type: 'text', value: `[${existingLink.id}]` }],
-          }
-          parent.children.splice(index + 1, 0, sup)
+          parent.children.splice(index + 1, 0, createFootnoteReference(existingLink.id))
         }
         return
       }
 
-      const text = extractText(node)
+      const text = getTextContent(node).trim() || node.properties.href?.toString() || ''
       const id = counter++
       links.push({ id, href, text })
       seenUrls.add(href)
 
       if (parent && typeof index === 'number') {
-        const sup: Element = {
-          type: 'element',
-          tagName: 'sup',
-          properties: { className: ['footnote-ref'] },
-          children: [{ type: 'text', value: `[${id}]` }],
-        }
-        parent.children.splice(index + 1, 0, sup)
+        parent.children.splice(index + 1, 0, createFootnoteReference(id))
       }
     })
 
@@ -64,66 +54,28 @@ const rehypeFootnoteLinks: Plugin<[Options?], Root> = (options = {}) => {
       return
     }
 
-    const footnoteSection: Element = {
+    const footnoteSection = createFootnoteSection(referenceTitle, links.map(link => ({
       type: 'element',
-      tagName: 'section',
-      properties: { className: ['footnotes'], dataFootnotes: '' },
+      tagName: 'li',
+      properties: { id: `user-content-fn-${link.id}` },
       children: [
         {
           type: 'element',
-          tagName: 'h4',
+          tagName: 'span',
           properties: {},
-          children: [{ type: 'text', value: referenceTitle }],
+          children: [{ type: 'text', value: `${link.text}: ` }],
         },
         {
           type: 'element',
-          tagName: 'ol',
-          properties: {},
-          children: links.map(link => ({
-            type: 'element',
-            tagName: 'li',
-            properties: { id: `user-content-fn-${link.id}` },
-            children: [
-              {
-                type: 'element',
-                tagName: 'span',
-                properties: {},
-                children: [{ type: 'text', value: `${link.text}: ` }],
-              },
-              {
-                type: 'element',
-                tagName: 'a',
-                properties: { href: link.href },
-                children: [{ type: 'text', value: link.href }],
-              },
-            ],
-          } as Element)),
+          tagName: 'a',
+          properties: { href: link.href },
+          children: [{ type: 'text', value: link.href }],
         },
       ],
-    }
+    } as Element)))
 
     tree.children.push(footnoteSection)
   }
-}
-
-function extractText(node: Element): string {
-  const texts: string[] = []
-
-  function walk(n: Element | Text) {
-    if (n.type === 'text') {
-      texts.push(n.value)
-    }
-    else if (n.type === 'element' && n.children) {
-      for (const child of n.children) {
-        if (child.type === 'text' || child.type === 'element') {
-          walk(child)
-        }
-      }
-    }
-  }
-
-  walk(node)
-  return texts.join('').trim() || node.properties?.href?.toString() || ''
 }
 
 export default rehypeFootnoteLinks

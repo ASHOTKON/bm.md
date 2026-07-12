@@ -1,6 +1,8 @@
 import type { Plugin } from 'unified'
-import type { Platform } from './adapters'
+import type * as z from 'zod'
+import type { renderDefinition } from './definition'
 import juice from 'juice'
+import katexCss from 'katex/dist/katex.css?inline'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeGithubAlert from 'rehype-github-alert'
 import rehypeHighlight from 'rehype-highlight'
@@ -16,36 +18,25 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 import { loadCodeThemeCss } from '@/themes/code-theme/loader'
 import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
-import { loadKatexCss } from '../utils'
 import { getAdapterPlugins } from './adapters'
-import { rehypeDivToSection, rehypeFigureWrapper, rehypeFootnoteLinks, rehypeInfographic, rehypeMermaid, rehypeWrapTextNodes, remarkFrontmatterTable } from './plugins'
+import rehypeDivToSection from './plugins/rehype-div-to-section'
+import rehypeFigureWrapper from './plugins/rehype-figure-wrapper'
+import rehypeFootnoteLinks from './plugins/rehype-footnote-links'
+import rehypeInfographic from './plugins/rehype-infographic'
+import rehypeKatexMetadata from './plugins/rehype-katex-metadata'
+import rehypeMermaid from './plugins/rehype-mermaid'
+import rehypeWrapTextNodes from './plugins/rehype-wrap-text-nodes'
+import remarkFrontmatterTable from './plugins/remark-frontmatter-table'
 import { sanitizeSchema } from './sanitize-schema'
 
-export interface RenderOptions {
-  markdown: string
-  markdownStyle?: string
-  codeTheme?: string
-  mermaidTheme?: string
-  infographicTheme?: string
-  infographicPalette?: string
-  customCss?: string
-  enableFootnoteLinks?: boolean
-  openLinksInNewWindow?: boolean
-  platform?: Platform
-  footnoteLabel?: string
-  referenceTitle?: string
+export type RenderOptions = z.input<typeof renderDefinition.inputSchema>
+
+export interface PreviewRenderResult {
+  html: string
+  css: string
 }
 
-interface ProcessorOptions {
-  enableFootnoteLinks?: boolean
-  openLinksInNewWindow?: boolean
-  mermaidTheme?: string
-  infographicTheme?: string
-  infographicPalette?: string
-  platform?: Platform
-  footnoteLabel?: string
-  referenceTitle?: string
-}
+type ProcessorOptions = Pick<RenderOptions, 'enableFootnoteLinks' | 'openLinksInNewWindow' | 'mermaidTheme' | 'infographicTheme' | 'infographicPalette' | 'platform' | 'footnoteLabel' | 'referenceTitle'>
 
 function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform = 'html', footnoteLabel = 'Footnotes', referenceTitle = 'References' }: ProcessorOptions) {
   const processor = unified()
@@ -73,7 +64,13 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidThe
     .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeMermaid, { theme: mermaidTheme })
     .use(rehypeInfographic, { theme: infographicTheme, palette: infographicPalette })
-    .use(rehypeKatex)
+    .use(rehypeKatex, {
+      output: 'htmlAndMathml',
+      trust: false,
+      maxSize: 500,
+      maxExpand: 1000,
+    })
+    .use(rehypeKatexMetadata)
     .use(rehypeHighlight)
     .use(rehypeFigureWrapper)
 
@@ -100,41 +97,12 @@ function createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidThe
 }
 
 export async function render(options: RenderOptions): Promise<string> {
-  const {
-    markdown,
-    markdownStyle,
-    codeTheme,
-    mermaidTheme,
-    infographicTheme,
-    infographicPalette,
-    customCss = '',
-    enableFootnoteLinks = true,
-    openLinksInNewWindow = true,
-    platform = 'html',
-    footnoteLabel = 'Footnotes',
-    referenceTitle = 'References',
-  } = options
+  const html = await renderMarkdownHtml(options)
+  const css = collectRenderCss(options, html)
 
-  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform, footnoteLabel, referenceTitle })
-  const html = (await processor.process(markdown)).toString()
-
-  const hasKatex = html.includes('class="katex"')
-    || html.includes('class="katex-display"')
-    || html.includes('class="katex-mathml"')
-
-  if (!markdownStyle && !codeTheme && !hasKatex && !customCss) {
+  if (!css) {
     return html
   }
-
-  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
-  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
-  const katexCss = hasKatex ? loadKatexCss() : ''
-  const css = [
-    markdownStyleCss ?? '',
-    codeThemeCss ?? '',
-    katexCss ?? '',
-    customCss,
-  ].filter(Boolean).join('\n')
 
   const wrapped = `<section id="bm-md">${html}</section>`
 
@@ -148,4 +116,57 @@ export async function render(options: RenderOptions): Promise<string> {
     console.error('Juice inline error:', error)
     return wrapped
   }
+}
+
+export async function renderPreview(options: RenderOptions): Promise<PreviewRenderResult> {
+  const html = await renderMarkdownHtml(options)
+
+  return {
+    html,
+    css: collectRenderCss(options, html),
+  }
+}
+
+export async function renderMarkdownHtml(options: RenderOptions): Promise<string> {
+  const {
+    markdown,
+    mermaidTheme,
+    infographicTheme,
+    infographicPalette,
+    enableFootnoteLinks = true,
+    openLinksInNewWindow = true,
+    platform = 'html',
+    footnoteLabel = 'Footnotes',
+    referenceTitle = 'References',
+  } = options
+
+  const processor = createProcessor({ enableFootnoteLinks, openLinksInNewWindow, mermaidTheme, infographicTheme, infographicPalette, platform, footnoteLabel, referenceTitle })
+
+  return (await processor.process(markdown)).toString()
+}
+
+export function collectRenderCss(options: RenderOptions, html: string): string {
+  const {
+    markdownStyle,
+    codeTheme,
+    customCss = '',
+  } = options
+
+  const hasKatex = html.includes('class="katex"')
+    || html.includes('class="katex-display"')
+    || html.includes('class="katex-mathml"')
+
+  if (!markdownStyle && !codeTheme && !hasKatex && !customCss) {
+    return ''
+  }
+
+  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
+  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
+  const mathCss = hasKatex ? katexCss : ''
+  return [
+    markdownStyleCss ?? '',
+    codeThemeCss ?? '',
+    mathCss,
+    customCss,
+  ].filter(Boolean).join('\n')
 }

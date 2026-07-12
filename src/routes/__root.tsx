@@ -1,15 +1,17 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { MotionConfig } from 'motion/react'
 import { ThemeProvider } from 'next-themes'
 import { useEffect } from 'react'
 
 import { NotFound } from '@/components/not-found'
 import { ThemeColorMeta } from '@/components/theme-color-meta'
 import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { appConfig } from '@/config'
 import { env } from '@/env'
-import { usePreviewStore } from '@/stores/preview'
+import { initClientIntegrations } from '@/lib/client-integrations'
 
 import appCss from '../styles.css?url'
 
@@ -17,14 +19,27 @@ import appCss from '../styles.css?url'
 const fontUrl = `https://fonts.googleapis.cn/css2?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
 
 export const Route = createRootRoute({
+  beforeLoad: () => {
+    return {
+      analytics: {
+        scriptUrl: env.ANALYTICS_SCRIPT_URL,
+        siteId: env.ANALYTICS_SITE_ID,
+      },
+    }
+  },
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: appConfig.title },
+      { name: 'application-name', content: appConfig.name },
       { name: 'description', content: appConfig.description },
       { name: 'keywords', content: appConfig.keywords },
       { name: 'author', content: appConfig.name },
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-title', content: appConfig.name },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       // Open Graph
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: appConfig.url },
@@ -46,7 +61,6 @@ export const Route = createRootRoute({
       // Preload 关键资源
       { rel: 'preload', href: fontUrl, as: 'style', crossOrigin: 'anonymous' },
       { rel: 'preload', href: appCss, as: 'style' },
-      { rel: 'preload', href: '/blur-mask.svg', as: 'image', type: 'image/svg+xml' },
       // Stylesheets
       { rel: 'stylesheet', href: fontUrl },
       { rel: 'stylesheet', href: appCss },
@@ -54,17 +68,10 @@ export const Route = createRootRoute({
       { rel: 'canonical', href: appConfig.url },
       { rel: 'manifest', href: '/manifest.webmanifest' },
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+      { rel: 'apple-touch-icon-precomposed', sizes: '180x180', href: '/apple-touch-icon-precomposed.png' },
     ],
   }),
-  beforeLoad: () => {
-    return {
-      analytics: {
-        scriptUrl: env.ANALYTICS_SCRIPT_URL,
-        siteId: env.ANALYTICS_SITE_ID,
-      },
-    }
-  },
   component: RootDocument,
   notFoundComponent: NotFound,
 })
@@ -74,12 +81,7 @@ function RootDocument() {
   const analyticsEnabled = analytics.scriptUrl && analytics.siteId
 
   useEffect(() => {
-    void usePreviewStore.persist.rehydrate()
-
-    Promise.all([
-      import('@/lib/pwa').then(({ initPWA }) => initPWA()),
-      import('@/lib/file-handler').then(({ initFileHandler }) => initFileHandler()),
-    ])
+    initClientIntegrations()
   }, [])
 
   return (
@@ -88,25 +90,24 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableColorScheme
-        >
-          <Outlet />
-          <ThemeColorMeta />
-        </ThemeProvider>
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        <MotionConfig reducedMotion="user">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableColorScheme
+          >
+            <TooltipProvider>
+              <Outlet />
+              <ThemeColorMeta />
+            </TooltipProvider>
+          </ThemeProvider>
+        </MotionConfig>
+        {env.DEV && (
+          <TanStackDevtools
+            config={{ position: 'bottom-right' }}
+            plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
+          />
+        )}
         <Scripts />
         <Toaster />
         {analyticsEnabled && (
