@@ -39,6 +39,7 @@ const config = defineConfig({
       env.NODE_ENV !== 'test'
         ? [nitro({
             preset: platformConfig.nitroPreset,
+            unenv: platformConfig.nitroUnenv,
             cloudflare: {
               nodeCompat: true,
               wrangler: {
