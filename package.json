@@ -61,6 +61,7 @@
     "@codemirror/state": "^6.7.1",
     "@codemirror/view": "^6.43.6",
     "@eslint-react/eslint-plugin": "^5.14.1",
+    "@firecrawl/anydoc-wasm": "^0.1.9",
     "@lezer/highlight": "^1.2.3",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@orpc/client": "^1.14.7",
