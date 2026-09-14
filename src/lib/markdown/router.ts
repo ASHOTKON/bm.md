@@ -3,6 +3,7 @@ import type { MarkdownTool } from './definitions'
 import { os } from '@orpc/server'
 import * as z from 'zod'
 import { markdownTools, renderDefinition, runMarkdownTool } from './definitions'
+import { renderPreview } from './render/html'
 
 function createMarkdownProcedure<
   TInputSchema extends MarkdownTool['inputSchema'],
@@ -52,10 +53,7 @@ const preview = os
     html: z.string(),
     css: z.string(),
   }))
-  .handler(async ({ input }) => {
-    const { renderPreview } = await import('./render/html')
-    return renderPreview(input)
-  })
+  .handler(async ({ input }) => renderPreview(input))
 
 export const router = {
   markdown: markdownProcedures,
