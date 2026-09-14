@@ -1,6 +1,7 @@
 import type * as z from 'zod'
 import type { renderDefinition } from './definition'
 import juice from 'juice'
+import katexCss from 'katex/dist/katex.css?inline'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeGithubAlert from 'rehype-github-alert'
 import rehypeHighlight from 'rehype-highlight'
@@ -15,6 +16,8 @@ import remarkMath from 'remark-math'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
+import { loadCodeThemeCss } from '@/themes/code-theme/loader'
+import { loadMarkdownStyleCss } from '@/themes/markdown-style/loader'
 import { resolveDiagramFontFamily } from '@/themes/markdown-style/metadata'
 import { getAdapterPlugins } from './adapters'
 import rehypeDivToSection from './plugins/rehype-div-to-section'
@@ -99,7 +102,7 @@ function createProcessor({ breaks = false, enableFootnoteLinks, openLinksInNewWi
 
 export async function render(options: RenderOptions): Promise<string> {
   const html = await renderMarkdownHtml(options)
-  const css = await collectRenderCss(options, html)
+  const css = collectRenderCss(options, html)
 
   if (!css) {
     return html
@@ -124,7 +127,7 @@ export async function renderPreview(options: RenderOptions): Promise<PreviewRend
 
   return {
     html,
-    css: await collectRenderCss(options, html),
+    css: collectRenderCss(options, html),
   }
 }
 
@@ -148,7 +151,7 @@ export async function renderMarkdownHtml(options: RenderOptions): Promise<string
   return (await processor.process(markdown)).toString()
 }
 
-export async function collectRenderCss(options: RenderOptions, html: string): Promise<string> {
+export function collectRenderCss(options: RenderOptions, html: string): string {
   const {
     markdownStyle,
     codeTheme,
@@ -163,18 +166,13 @@ export async function collectRenderCss(options: RenderOptions, html: string): Pr
     return ''
   }
 
-  // CSS 是字符串资源而非代码：顶层引入会让模块图在纯 Node 下（tsx 脚本）无法加载，
-  // 而 ?inline 模块的求值近乎免费，按需 dynamic import 对请求 CPU 无影响。
-  const [styleLoader, codeLoader, katexModule] = await Promise.all([
-    markdownStyle ? import('@/themes/markdown-style/loader') : null,
-    codeTheme ? import('@/themes/code-theme/loader') : null,
-    hasKatex ? import('katex/dist/katex.css?inline') : null,
-  ])
-
+  const markdownStyleCss = markdownStyle ? loadMarkdownStyleCss(markdownStyle) : ''
+  const codeThemeCss = codeTheme ? loadCodeThemeCss(codeTheme) : ''
+  const mathCss = hasKatex ? katexCss : ''
   return [
-    (markdownStyle && styleLoader ? styleLoader.loadMarkdownStyleCss(markdownStyle) : '') ?? '',
-    (codeTheme && codeLoader ? codeLoader.loadCodeThemeCss(codeTheme) : '') ?? '',
-    katexModule?.default ?? '',
+    markdownStyleCss ?? '',
+    codeThemeCss ?? '',
+    mathCss,
     customCss,
   ].filter(Boolean).join('\n')
 }
